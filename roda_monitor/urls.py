@@ -20,5 +20,7 @@ from monitor_backend import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/getMatchTime', views.getMatchTime),
+    path('api/getSubMatchTime', views.getSubMatchTime),
     re_path(r'^.*$', views.index_fun)
 ]

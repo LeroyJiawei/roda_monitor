@@ -35,7 +35,7 @@
 
 git clone https://github.com/sosout/vue2-element.git
 
-cd vue2-element
+cd monitor_vue
 ```
 
 ### 安装

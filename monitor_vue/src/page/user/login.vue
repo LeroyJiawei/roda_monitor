@@ -139,17 +139,19 @@ export default {
   methods: {
     submitForm(name) {
       const that = this;
+      that.$router.push({path: '/quick'});
       // that.$refs[name].validate((valid) => {
       //   if (valid) that.goLogin(); // 验证通过，前去登录
       // });
-      that.goLogin();
+      // that.goLogin();
     },
     resetForm(name) { // 重置表单
       const that = this;
       this.$refs[name].resetFields();
     },
     async goLogin () { // 登录
-      this.$router.push({path: '/quick'});
+      console.log("sjhfasd");
+      // this.$router.push({path: '/quick'});
       
       // const that = this;
       // const formLogin = that.formLogin;
