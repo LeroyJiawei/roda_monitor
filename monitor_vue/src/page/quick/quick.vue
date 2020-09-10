@@ -107,7 +107,8 @@ export default {
 
     setInterval(function () {
       that.$axios
-        .get(`${window.$config.HOST}/api/getMatchTime`)
+        // .get(`${window.$config.HOST}/api/getMatchTime`)
+        .get(`/api/getMatchTime`)
         .then((response) => {
           if (chart1_data.length == 60) {
             chart1_data.shift();
