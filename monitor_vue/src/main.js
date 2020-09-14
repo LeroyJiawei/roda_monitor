@@ -22,7 +22,7 @@ Vue.use(VueRouter);
 Vue.use(ElementUI);
 
 window.$config = {};
-window.$config.HOST = 'http://192.168.1.177:80';
+window.$config.HOST = 'http://localhost:80';
 // window.$config.HOST = ''; // production
 
 // import { Message, loading } from 'element-ui';

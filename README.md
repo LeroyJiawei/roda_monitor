@@ -11,7 +11,11 @@ directory: monitor_vue
 
 - packages install: `npm install`
 - DEV: `yarn run dev`
-- PROD: `yarn run build`
+- PROD: 
+
+    + `yarn run build`
+    + modify `main.js: window.$config.HOST = 'http://192.168.1.177:80';` 
+        to `main.js: window.$config.HOST = '';`
 
 ## django
 - DIR: roda_monitor -- django config files
