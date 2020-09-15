@@ -1,22 +1,27 @@
 from django.shortcuts import render, HttpResponse
+from configparser import ConfigParser
+import django.views.decorators.http as dj_http
 from influxdb import InfluxDBClient
+import logging
+import json
+import datetime
 import requests
 import time
-import datetime
-import json
-import logging
 
 logging.basicConfig(level=logging.INFO,
                     format='[%(asctime)s - %(name)s] - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+cfg = ConfigParser()
+cfg.read('config.ini')
+influx_host = cfg.get('influxdb', 'host')
+influx_port = cfg.get('influxdb', 'port')
+influx_user = cfg.get('influxdb', 'username')
+influx_passwd = cfg.get('influxdb', 'passwd')
+influx_db = cfg.get('influxdb', 'database')
 
-countt = 1
-user = 'lab126'
-password = 'lab126'
-dbname = "roda"
-
-client = InfluxDBClient('jwxu.pub', 8086, user, password, dbname)
+client = InfluxDBClient(influx_host, influx_port,
+                        influx_user, influx_passwd, influx_db)
 i_count = 0
 match_timestamp = 1599471156644732552
 j_count = 0
@@ -29,6 +34,7 @@ def index_fun(request):
     return render(request, "index.html")
 
 
+@dj_http.require_GET
 def getMatchTime(request):
     matchtime_result_list = []
     global i_count
@@ -76,6 +82,7 @@ def getMatchTime(request):
     return HttpResponse(res)
 
 
+@dj_http.require_GET
 def getSubMatchTime(request):
     logger.info("Get into getSubMatchTime")
     matchtime_result_list = []

@@ -3,13 +3,18 @@
     <el-card class="quick-card">
       <v-chart ref="chart1" :options="option" />
     </el-card>
+
+    <el-card class="quick-card">
+      <v-chart ref="chart2" :options="option2" />
+    </el-card>
   </div>
 </template>
 
 <script>
 import ECharts from "vue-echarts";
-import "echarts/lib/chart/line";
-import "echarts/lib/component/polar";
+// import "echarts/lib/chart/line";
+// import "echarts/lib/component/polar";
+import echarts from "echarts";
 
 var chart1_data = [];
 
@@ -34,6 +39,56 @@ for (var i = 3; i > 0; i--) {
   });
 }
 
+var data2 = [
+  {
+    symbolSize: 20,
+    id: 0,
+    name: "super",
+  },
+  {
+    id: 1,
+    symbolSize: 20,
+    name: "edge1",
+  },
+  {
+    id: 2,
+    symbolSize: 20,
+    name: "edge2",
+  },
+  {
+    id: 3,
+    symbolSize: 20,
+    name: "edge3",
+  },
+];
+
+var edges2 = [
+  {
+    source: 0,
+    target: 1,
+    lineStyle: {
+      width: 5,
+      curveness: 0.2,
+    },
+  },
+  {
+    source: 0,
+    target: 2,
+    lineStyle: {
+      width: 5,
+      curveness: 0.2,
+    },
+  },
+  {
+    source: 0,
+    target: 3,
+    lineStyle: {
+      width: 5,
+      curveness: 0.2,
+    },
+  },
+];
+
 export default {
   components: {
     "v-chart": ECharts,
@@ -51,7 +106,9 @@ export default {
             params = params[0];
             var date = new Date(params.name);
             return (
-              [now.getHours(), now.getMinutes(), now.getSeconds()].join(":") +
+              [date.getHours(), date.getMinutes(), date.getSeconds()].join(
+                ":"
+              ) +
               " " +
               params.value[1]
             );
@@ -96,6 +153,22 @@ export default {
           },
         ],
       },
+      option2: {
+        series: [
+          {
+            type: "graph",
+            layout: "force",
+            animation: false,
+            data: data2,
+            force: {
+              // repulsion: 200,
+              edgeLength: 300,
+            },
+            edgeSymbolSize: 1200,
+            edges: edges2,
+          },
+        ],
+      },
     };
   },
   created() {},
@@ -132,7 +205,7 @@ export default {
           });
         })
         .catch((error) => {
-          console.lof(error);
+          console.log(error);
         });
     }, 1000);
   },
