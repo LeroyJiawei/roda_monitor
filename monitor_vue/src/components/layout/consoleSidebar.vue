@@ -69,20 +69,31 @@
     <el-menu :unique-opened='true' :router='true' theme="dark" :default-active="defaultActive" class="sidebar-content">
       <div class="sidebar-fold">版本1.0.0</div>
       <el-menu-item index="/quick"><i class="el-icon-message"></i>快速入门</el-menu-item>
-      <el-submenu index="base">
-        <template slot="title">
-          <i class="el-icon-message"></i>
-          基础服务
-        </template>
-        <el-menu-item index="/thrmenu/article"><i class="el-icon-document"></i>三级菜单</el-menu-item>
-      </el-submenu>
-      <el-submenu index="user">
+      <!-- <el-submenu index="user">
         <template slot="title">
           <i class="el-icon-message"></i>
           用户中心
         </template>
         <el-menu-item index="/user"><i class="el-icon-document"></i>用户管理</el-menu-item>
+      </el-submenu> -->
+      <el-menu-item index="/topo"><i class="el-icon-document"></i>TOPO</el-menu-item>
+      <el-menu-item index="/n2n"><i class="el-icon-document"></i>N2N</el-menu-item>
+      <el-submenu index="base">
+        <template slot="title">
+          <i class="el-icon-message"></i>
+          性能
+        </template>
+        <el-menu-item index="/perfomance/e2e"><i class="el-icon-document"></i>端到端</el-menu-item>
+        <el-menu-item index="/thrmenu/filter1"><i class="el-icon-document"></i>匹配</el-menu-item>
       </el-submenu>
+      <!-- <el-submenu index="performance">
+        <template slot="title">
+          <i class="el-icon-message"></i>性能
+        </template>
+        <el-menu-item index="/perfomance/e2e"><i class="el-icon-document"></i>端到端</el-menu-item>
+        <el-menu-item index="/perfomance/match"><i class="el-icon-document"></i>匹配</el-menu-item>
+      </el-submenu> -->
+      <el-menu-item index="/hub"><i class="el-icon-document"></i>Hub</el-menu-item>
     </el-menu>
   </div>
 </template>

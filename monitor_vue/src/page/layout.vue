@@ -23,6 +23,9 @@
         line-height: 50px;
       }
     }
+    .content-container{
+      padding:10px 40px;
+    }
   }
 </style>
 <template>
@@ -32,7 +35,10 @@
         <console-navbar v-show="hasNavbar"></console-navbar>
         <div class="console-main" :class="{'console-main-full': hasNavbar}">
           <console-bcrumd class="console-bcrumd"></console-bcrumd>
-          <router-view></router-view>
+          <div class="content-container">
+            <router-view></router-view>
+          </div>
+          
         </div>
     </div>
 </template>
