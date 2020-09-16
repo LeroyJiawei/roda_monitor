@@ -1,32 +1,10 @@
 from django.shortcuts import HttpResponse
-from configparser import ConfigParser
-import mysql.connector
 import django.views.decorators.http as dj_http
 import requests
 import json
-import logging
 import traceback
 
-logging.basicConfig(level=logging.INFO,
-                    format='[%(asctime)s - %(name)s] - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
-cfg = ConfigParser()
-cfg.read('config.ini')
-mysql_host = cfg.get('mysql', 'host')
-mysql_port = cfg.get('mysql', 'port')
-mysql_user = cfg.get('mysql', 'username')
-mysql_passwd = cfg.get('mysql', 'passwd')
-mysql_db = cfg.get('mysql', 'database')
-
-mydb_client = mysql.connector.connect(
-    host=mysql_host,
-    port=mysql_port,
-    user=mysql_user,
-    passwd=mysql_passwd,
-    database=mysql_db
-)
-mydb_cursor = mydb_client.cursor()
+from monitor_backend.views_commons import logger, mydb_cursor, mydb_client
 
 
 @dj_http.require_POST
@@ -139,7 +117,7 @@ def n2n_delete(request):
 
 
 @dj_http.require_GET
-def n2n_lists(request):
+def n2n_list(request):
     res = {"status": "OK"}
 
     get_data = request.GET  # this is a QueryDict object

@@ -15,7 +15,7 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path, re_path
-from monitor_backend import views, views_n2n
+from monitor_backend import views, views_n2n, views_sink_source
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -23,8 +23,16 @@ urlpatterns = [
     path('api/n2n/registry', views_n2n.n2n_registry),
     path('api/n2n/update', views_n2n.n2n_update),
     path('api/n2n/delete', views_n2n.n2n_delete),
-    path('api/n2n/list', views_n2n.n2n_lists),
+    path('api/n2n/list', views_n2n.n2n_list),
     path('api/n2n/topo', views_n2n.n2n_topo),
+
+    # sink and source
+    path('api/sink_source/registry', views_sink_source.sink_source_registry),
+    path('api/sink_source/update', views_sink_source.sink_source_update),
+    path('api/sink_source/delete', views_sink_source.sink_source_delete),
+    path('api/sink_source/list', views_sink_source.sink_source_list),
+    path('api/sink_source/topo', views_sink_source.sink_source_topo),
+
     path('api/getMatchTime', views.getMatchTime),
     path('api/getSubMatchTime', views.getSubMatchTime),
     re_path(r'^.*$', views.index_fun)
