@@ -17,11 +17,11 @@ def sink_source_registry(request):
     if ('role' in post_data and 'name' in post_data and
             'n2n_id' in post_data and 'source_data_system' in post_data
             and 'source_info' in post_data):
-        sql_query = '''insert into sink_sources
+        sql_query = '''INSERT INTO sink_sources
                         (`n2n_id`, `role`, `name`, `create_time`,
                             `update_time`, `source_data_system`, `source_info`, 
                             `state`, `description`)
-                        values
+                        VALUES
                         ( {}, "{}","{}",  now(), now(), "{}", "{}",'init', "{}");'''.format(
             post_data['n2n_id'], post_data['role'], post_data['name'],
             post_data['source_data_system'], post_data['source_info'],
@@ -33,8 +33,8 @@ def sink_source_registry(request):
         except Exception as e:
             mydb_client.rollback()
             logger.error(
-                "Source system insert query [{}] failed: {}".format(sql_query, e))
-            res["status"] = "Source system insert failed: {}".format(e)
+                "Sink source system insert query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "Sink source system insert failed: {}".format(e)
     else:
         res["status"] = "miss parameter"
         return HttpResponse(json.dumps(res))
@@ -52,11 +52,11 @@ def sink_source_update(request):
     if ('id' in post_data and 'name' in post_data and
             'n2n_id' in post_data and 'source_data_system' in post_data
             and 'source_info' in post_data):
-        sql_query = '''update sink_sources set
+        sql_query = '''UPDATE sink_sources SET
                     `name` = '{}', `n2n_id`='{}', 
                     `source_data_system`='{}', `source_info`='{}',
                     `update_time`=now(), `description`='{}' 
-                    where id={}
+                    WHERE id={}
                     '''.format(
             post_data['name'], post_data['n2n_id'],
             post_data['source_data_system'], post_data['source_info'],
@@ -69,8 +69,8 @@ def sink_source_update(request):
         except Exception as e:
             mydb_client.rollback()
             logger.error(
-                "Source system update query [{}] failed: {}".format(sql_query, e))
-            res["status"] = "Source system update failed: {}".format(e)
+                "Sink source system update query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "Sink source system update failed: {}".format(e)
     else:
         res["status"] = "miss parameter"
         return HttpResponse(json.dumps(res))
@@ -86,7 +86,7 @@ def sink_source_delete(request):
     delete_data = json.loads(request.body.decode("UTF-8"))
 
     if('id' in delete_data):
-        sql_query = "delete from sink_sources where id = {}".format(
+        sql_query = "DELETE FROM sink_sources WHERE id = {}".format(
             delete_data['id'])
 
         try:
@@ -95,8 +95,8 @@ def sink_source_delete(request):
         except Exception as e:
             mydb_client.rollback()
             logger.error(
-                "Source system delete query [{}] failed: {}".format(sql_query, e))
-            res["status"] = "Source system delete failed: {}".format(e)
+                "Sink source system delete query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "Sink source system delete failed: {}".format(e)
     else:
         res["status"] = "miss parameter"
         return HttpResponse(json.dumps(res))
@@ -110,28 +110,38 @@ def sink_source_list(request):
 
     get_data = request.GET  # this is a QueryDict object
 
-    sql_query = '''SELECT `sink_sources`.`id`, `sink_sources`.`name`, `sink_sources`.`role`,
+    param = get_data.get("role")
+
+    if(param != None):
+        sql_query = '''SELECT `sink_sources`.`id`, `sink_sources`.`name`, `sink_sources`.`role`,
                            `sink_sources`.`source_data_system`, `sink_sources`.`source_info`,
                            `n2n`.`id` as `n2n_id`,`n2n`.`name` as `n2n_name`,
                            `sink_sources`.`create_time`, `sink_sources`.`update_time`, 
                            `sink_sources`.`state`, `sink_sources`.`description` 
-                    FROM `sink_sources` JOIN `n2n` ON `sink_sources`.`n2n_id`=`n2n`.`id`'''
-    try:
-        mydb_cursor.execute(sql_query)
-        res['data'] = []
-        for tup in mydb_cursor:
-            res['data'].append({
-                "id": tup[0], "name": tup[1], "role": tup[2],
-                "source_data_system": tup[3], "source_info": tup[4],
-                "n2n_id": tup[5], "n2n_name": tup[6],
-                "create_time": str(tup[7]), "update_time": str(tup[8]),
-                "state": tup[9], "description": tup[10]
-            })
+                    FROM `sink_sources` JOIN `n2n` ON `sink_sources`.`n2n_id`=`n2n`.`id` '''
 
-    except Exception as e:
-        logger.error(
-            "Source system select query [{}] failed: {}".format(sql_query, e))
-        res["status"] = "Source system select failed: {}".format(e)
+        if(param != "all"):
+            sql_query += " WHERE `sink_sources`.`role` = '{}'".format(param)
+
+        try:
+            mydb_cursor.execute(sql_query)
+            res['data'] = []
+            for tup in mydb_cursor:
+                res['data'].append({
+                    "id": tup[0], "name": tup[1], "role": tup[2],
+                    "source_data_system": tup[3], "source_info": tup[4],
+                    "n2n_id": tup[5], "n2n_name": tup[6],
+                    "create_time": str(tup[7]), "update_time": str(tup[8]),
+                    "state": tup[9], "description": tup[10]
+                })
+
+        except Exception as e:
+            logger.error(
+                "Sink source system select query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "Sink source system select failed: {}".format(e)
+    else:
+        res["status"] = "miss parameter"
+        return HttpResponse(json.dumps(res))
 
     return HttpResponse(json.dumps(res))
 
@@ -141,7 +151,7 @@ def sink_source_topo(request):
     res = {"status": "OK"}
 
     sink_sources = []
-    sql_query = '''select `name`,`id`,`role` from sink_sources '''
+    sql_query = '''SELECT `name`,`id`,`role` FROM sink_sources '''
     try:
         mydb_cursor.execute(sql_query)
         sink_sources = mydb_cursor.fetchall()

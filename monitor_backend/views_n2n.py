@@ -22,11 +22,11 @@ def n2n_registry(request):
             'name' in post_data):
 
         # TODO: before insert should check whether current new n2n is unique
-        sql_query = '''insert into n2n
+        sql_query = '''INSERT INTO n2n
                     (`name`, `role`, `vlan_addr`, `port`, `service_port`,
                         `supernode_name`, `vlan_name`,
                         `key`, `create_time`, `update_time`, `state`, `description` )
-                    values
+                    VALUES
                     ('{}','{}', '{}', '{}',{}, '{}', '{}',
                         {}, now(), now(), 'init',{})'''.format(
             post_data['name'], post_data['role'], post_data['vlan_addr'],
@@ -72,11 +72,11 @@ def n2n_update(request):
 
         # TODO: if it is changing the addr and port of supernode,
         # should change all relative edge nodes
-        sql_query = '''update n2n set
+        sql_query = '''UPDATE n2n SET
                     `name` = '{}', `vlan_addr`='{}', `port`='{}',
                     `supernode_name`='{}', `vlan_name`='{}', `key`={},
                     `update_time`=now(), `description`={}, `service_port`={}
-                    where id={}
+                    WHERE id={}
                     '''.format(
             post_data['name'], post_data['vlan_addr'],
             post_data['port'], post_data['supernode_name'], post_data['vlan_name'],
@@ -112,7 +112,7 @@ def n2n_delete(request):
 
     if('id' in delete_data):
         # TODO: if it is deleting supernode, should delete all relative edge nodes
-        sql_query = '''delete from n2n where id = {}'''.format(
+        sql_query = '''DELETE FROM n2n WHERE id = {}'''.format(
             delete_data['id'])
 
         try:
@@ -139,12 +139,12 @@ def n2n_list(request):
     param = get_data.get('role')
     # if role does not exist, get() retuen none
     if(param):
-        sql_query = '''select `id`,`role`,`name`,`vlan_addr`,`port`,`vlan_name`,`key`,
+        sql_query = '''SELECT `id`,`role`,`name`,`vlan_addr`,`port`,`vlan_name`,`key`,
                         `supernode_name`,`create_time`,`update_time`,`state`,`description`,
                         `service_port`
-                        from n2n '''
+                        FROM n2n '''
         if(param != "all"):
-            sql_query += " where role = '{}'".format(param)
+            sql_query += " WHERE role = '{}'".format(param)
 
         try:
             mydb_cursor.execute(sql_query)
@@ -162,11 +162,11 @@ def n2n_list(request):
 
         except Exception as e:
             logger.error(
-                "select query [{}] failed: {}".format(sql_query, e))
-            res["status"] = "mysql select failed: {}".format(e)
+                "N2N select query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "N2N select failed: {}".format(e)
 
     else:
-        res["status"] = "miss parameter/wrong role parameter"
+        res["status"] = "miss parameter"
         return HttpResponse(json.dumps(res))
 
     return HttpResponse(json.dumps(res))
@@ -178,13 +178,13 @@ def n2n_topo(request):
 
     supernodes_name = []
     # if role does not exist, get() retuen none
-    sql_query = '''select `name`,`id` from n2n where role = 'supernode' '''
+    sql_query = '''SELECT `name`,`id` FROM n2n WHERE role = 'supernode' '''
     try:
         mydb_cursor.execute(sql_query)
         supernodes_name = mydb_cursor.fetchall()
     except Exception as e:
-        logger.error("select query [{}] failed: {}".format(sql_query, e))
-        res["status"] = "mysql update failed: {}".format(e)
+        logger.error("N2N select query [{}] failed: {}".format(sql_query, e))
+        res["status"] = "N2N select failed: {}".format(e)
         return HttpResponse(json.dumps(res))
 
     res["data"] = {"nodes": [], "edges": []}
@@ -194,7 +194,7 @@ def n2n_topo(request):
             "name": node[0],
             "id": node[1]
         })
-        sql_query = "select `name`,`id` from n2n where supernode_name = '{}'".format(
+        sql_query = "SELECT `name`,`id` FROM n2n WHERE supernode_name = '{}'".format(
             node[0])
         try:
             mydb_cursor.execute(sql_query)
@@ -208,7 +208,8 @@ def n2n_topo(request):
                     "target": edge[1]
                 })
         except Exception as e:
-            logger.error("select query [{}] failed: {}".format(sql_query, e))
-            res["status"] = "mysql update failed: {}".format(e)
+            logger.error(
+                "N2N select query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "N2N select failed: {}".format(e)
 
     return HttpResponse(json.dumps(res))
