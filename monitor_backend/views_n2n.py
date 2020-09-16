@@ -17,27 +17,29 @@ def n2n_registry(request):
     if ('role' in post_data and
         'vlan_addr' in post_data and
         'vlan_name' in post_data and
-        'port' in post_data and
         'supernode_name' in post_data and
             'name' in post_data):
 
         # TODO: before insert should check whether current new n2n is unique
         sql_query = '''INSERT INTO n2n
-                    (`name`, `role`, `vlan_addr`, `port`, `service_port`,
+                    (`name`, `role`, `vlan_addr`, `docker_port`, `service_port`,
                         `supernode_name`, `vlan_name`,
-                        `key`, `create_time`, `update_time`, `state`, `description` )
+                        `key`, `create_time`, `update_time`, `state`, `description`, `addr` )
                     VALUES
-                    ('{}','{}', '{}', '{}',{}, '{}', '{}',
-                        {}, now(), now(), 'init',{})'''.format(
+                    ('{}','{}', '{}', '{}', '{}', {}, {}, 
+                        {}, now(), now(), 'init',{},{})'''.format(
             post_data['name'], post_data['role'], post_data['vlan_addr'],
-            post_data['port'],
+            post_data['supernode_name'], post_data['vlan_name'],
+            "'{}'".format(post_data['docker_port']
+                          ) if 'docker_port' in post_data else 'null',
             "'{}'".format(post_data['service_port']
                           ) if 'service_port' in post_data else 'null',
-            post_data['supernode_name'], post_data['vlan_name'],
             "'{}'".format(post_data['key']
                           ) if 'key' in post_data else 'null',
             "'{}'".format(post_data['description']
-                          ) if 'description' in post_data else 'null'
+                          ) if 'description' in post_data else 'null',
+            "'{}'".format(post_data['addr']
+                          ) if 'addr' in post_data else 'null'
         )
 
         try:
@@ -66,7 +68,6 @@ def n2n_update(request):
         'role' in post_data and
         'vlan_addr' in post_data and
         'vlan_name' in post_data and
-        'port' in post_data and
         'supernode_name' in post_data and
             'name' in post_data):
 
@@ -75,7 +76,8 @@ def n2n_update(request):
         sql_query = '''UPDATE n2n SET
                     `name` = '{}', `vlan_addr`='{}', `port`='{}',
                     `supernode_name`='{}', `vlan_name`='{}', `key`={},
-                    `update_time`=now(), `description`={}, `service_port`={}
+                    `update_time`=now(), `description`={}, `service_port`={},
+                    `docker_port`={}, `addr`={} 
                     WHERE id={}
                     '''.format(
             post_data['name'], post_data['vlan_addr'],
@@ -86,6 +88,10 @@ def n2n_update(request):
                           ) if 'description' in post_data else 'null',
             "'{}'".format(post_data['service_port']
                           ) if 'service_port' in post_data else 'null',
+            "'{}'".format(post_data['docker_port']
+                          ) if 'docker_port' in post_data else 'null',
+            "'{}'".format(post_data['addr']
+                          ) if 'addr' in post_data else 'null',
             post_data['id'])
 
         try:
@@ -139,9 +145,9 @@ def n2n_list(request):
     param = get_data.get('role')
     # if role does not exist, get() retuen none
     if(param):
-        sql_query = '''SELECT `id`,`role`,`name`,`vlan_addr`,`port`,`vlan_name`,`key`,
+        sql_query = '''SELECT `id`,`role`,`name`,`vlan_addr`,`docker_port`,`vlan_name`,`key`,
                         `supernode_name`,`create_time`,`update_time`,`state`,`description`,
-                        `service_port`
+                        `service_port`, `addr` 
                         FROM n2n '''
         if(param != "all"):
             sql_query += " WHERE role = '{}'".format(param)
@@ -153,11 +159,11 @@ def n2n_list(request):
                 res['data'].append({
                     "id": tup[0], "role": tup[1],
                     "name": tup[2], "vlan_addr": tup[3],
-                    "port": tup[4], "vlan_name": tup[5],
+                    "docker_port": tup[4], "vlan_name": tup[5],
                     "key": tup[6],   "supernode_name": tup[7],
                     "create_time": str(tup[8]),  "update_time": str(tup[9]),
                     "state": tup[10], "description": tup[11],
-                    "service_port": tup[12]
+                    "service_port": tup[12], "addr": tup[13]
                 })
 
         except Exception as e:
