@@ -14,13 +14,17 @@ def sink_source_registry(request):
     # get post body json data
     post_data = json.loads(request.body.decode("UTF-8"))
 
-    if ('role' in post_data and 'name' in post_data and 'n2n_id' in post_data):
+    if ('role' in post_data and 'name' in post_data and
+            'n2n_id' in post_data and 'source_data_system' in post_data
+            and 'source_info' in post_data):
         sql_query = '''insert into sink_sources
                         (`n2n_id`, `role`, `name`, `create_time`,
-                            `update_time`, `state`, `description`)
+                            `update_time`, `source_data_system`, `source_info`, 
+                            `state`, `description`)
                         values
-                        ( {}, "{}","{}",  now(), now(), 'init', "{}");'''.format(
+                        ( {}, "{}","{}",  now(), now(), "{}", "{}",'init', "{}");'''.format(
             post_data['n2n_id'], post_data['role'], post_data['name'],
+            post_data['source_data_system'], post_data['source_info'],
             post_data['description'] if 'description' in post_data else 'null')
 
         try:
@@ -45,13 +49,17 @@ def sink_source_update(request):
     # get post body json data
     post_data = json.loads(request.body.decode("UTF-8"))
 
-    if ('id' in post_data and 'name' in post_data and 'n2n_id' in post_data):
+    if ('id' in post_data and 'name' in post_data and
+            'n2n_id' in post_data and 'source_data_system' in post_data
+            and 'source_info' in post_data):
         sql_query = '''update sink_sources set
-                    `name` = '{}', `n2n_id`='{}',
+                    `name` = '{}', `n2n_id`='{}', 
+                    `source_data_system`='{}', `source_info`='{}',
                     `update_time`=now(), `description`='{}' 
                     where id={}
                     '''.format(
             post_data['name'], post_data['n2n_id'],
+            post_data['source_data_system'], post_data['source_info'],
             post_data['description'] if 'description' in post_data else 'null',
             post_data['id'])
 
@@ -103,6 +111,7 @@ def sink_source_list(request):
     get_data = request.GET  # this is a QueryDict object
 
     sql_query = '''SELECT `sink_sources`.`id`, `sink_sources`.`name`, `sink_sources`.`role`,
+                           `sink_sources`.`source_data_system`, `sink_sources`.`source_info`,
                            `n2n`.`id` as `n2n_id`,`n2n`.`name` as `n2n_name`,
                            `sink_sources`.`create_time`, `sink_sources`.`update_time`, 
                            `sink_sources`.`state`, `sink_sources`.`description` 
@@ -113,9 +122,10 @@ def sink_source_list(request):
         for tup in mydb_cursor:
             res['data'].append({
                 "id": tup[0], "name": tup[1], "role": tup[2],
-                "n2n_id": tup[3], "n2n_name": tup[4],
-                "create_time": str(tup[5]), "update_time": str(tup[6]),
-                "state": tup[7],   "description": tup[8]
+                "source_data_system": tup[3], "source_info": tup[4],
+                "n2n_id": tup[5], "n2n_name": tup[6],
+                "create_time": str(tup[7]), "update_time": str(tup[8]),
+                "state": tup[9], "description": tup[10]
             })
 
     except Exception as e:

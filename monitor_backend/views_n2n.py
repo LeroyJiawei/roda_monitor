@@ -22,24 +22,32 @@ def n2n_registry(request):
             'name' in post_data):
 
         # TODO: before insert should check whether current new n2n is unique
-        sql_query = '''insert into n2n 
-                    (`name`, `role`, `vlan_addr`, `port`, `supernode_name`, `vlan_name`, 
-                        `key`, `create_time`, `update_time`, `state`, `description`) 
-                    values 
-                    ('{}','{}', '{}', '{}', '{}', '{}', 
-                        '{}', now(), now(), 'init','{}')'''.format(
+        sql_query = '''insert into n2n
+                    (`name`, `role`, `vlan_addr`, `port`, `service_port`,
+                        `supernode_name`, `vlan_name`,
+                        `key`, `create_time`, `update_time`, `state`, `description` )
+                    values
+                    ('{}','{}', '{}', '{}',{}, '{}', '{}',
+                        {}, now(), now(), 'init',{})'''.format(
             post_data['name'], post_data['role'], post_data['vlan_addr'],
-            post_data['port'], post_data['supernode_name'], post_data['vlan_name'],
-            post_data['key'] if 'key' in post_data else 'null',
-            post_data['description'] if 'description' in post_data else 'null')
+            post_data['port'],
+            "'{}'".format(post_data['service_port']
+                          ) if 'service_port' in post_data else 'null',
+            post_data['supernode_name'], post_data['vlan_name'],
+            "'{}'".format(post_data['key']
+                          ) if 'key' in post_data else 'null',
+            "'{}'".format(post_data['description']
+                          ) if 'description' in post_data else 'null'
+        )
 
         try:
             mydb_cursor.execute(sql_query)
             mydb_client.commit()
         except Exception as e:
             mydb_client.rollback()
-            logger.error("Insert query [{}] failed: {}".format(sql_query, e))
-            res["status"] = "mysql insert failed: {}".format(e)
+            logger.error(
+                "N2N insert query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "N2N insert failed: {}".format(e)
     else:
         res["status"] = "miss parameter"
         return HttpResponse(json.dumps(res))
@@ -65,15 +73,19 @@ def n2n_update(request):
         # TODO: if it is changing the addr and port of supernode,
         # should change all relative edge nodes
         sql_query = '''update n2n set
-                    `name` = '{}', `vlan_addr`='{}', `port`='{}', 
-                    `supernode_name`='{}', `vlan_name`='{}', `key`='{}', 
-                    `update_time`=now(), `description`='{}' 
+                    `name` = '{}', `vlan_addr`='{}', `port`='{}',
+                    `supernode_name`='{}', `vlan_name`='{}', `key`={},
+                    `update_time`=now(), `description`={}, `service_port`={}
                     where id={}
                     '''.format(
             post_data['name'], post_data['vlan_addr'],
             post_data['port'], post_data['supernode_name'], post_data['vlan_name'],
-            post_data['key'] if 'key' in post_data else 'null',
-            post_data['description'] if 'description' in post_data else 'null',
+            "'{}'".format(post_data['key']
+                          ) if 'key' in post_data else 'null',
+            "'{}'".format(post_data['description']
+                          ) if 'description' in post_data else 'null',
+            "'{}'".format(post_data['service_port']
+                          ) if 'service_port' in post_data else 'null',
             post_data['id'])
 
         try:
@@ -81,8 +93,9 @@ def n2n_update(request):
             mydb_client.commit()
         except Exception as e:
             mydb_client.rollback()
-            logger.error("update query [{}] failed: {}".format(sql_query, e))
-            res["status"] = "mysql update failed: {}".format(e)
+            logger.error(
+                "N2N update query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "N2N update failed: {}".format(e)
     else:
         res["status"] = "miss parameter"
         return HttpResponse(json.dumps(res))
@@ -97,7 +110,7 @@ def n2n_delete(request):
     # get post body json data
     delete_data = json.loads(request.body.decode("UTF-8"))
 
-    if('id' in delete_data and 'role' in delete_data):  # role is not used currently
+    if('id' in delete_data):
         # TODO: if it is deleting supernode, should delete all relative edge nodes
         sql_query = '''delete from n2n where id = {}'''.format(
             delete_data['id'])
@@ -107,8 +120,9 @@ def n2n_delete(request):
             mydb_client.commit()
         except Exception as e:
             mydb_client.rollback()
-            logger.error("delete query [{}] failed: {}".format(sql_query, e))
-            res["status"] = "mysql delete failed: {}".format(e)
+            logger.error(
+                "N2N delete query [{}] failed: {}".format(sql_query, e))
+            res["status"] = "N2N delete failed: {}".format(e)
     else:
         res["status"] = "miss parameter"
         return HttpResponse(json.dumps(res))
@@ -122,12 +136,15 @@ def n2n_list(request):
 
     get_data = request.GET  # this is a QueryDict object
 
+    param = get_data.get('role')
     # if role does not exist, get() retuen none
-    if(get_data.get('role') in ["supernode", "edge"]):
+    if(param):
         sql_query = '''select `id`,`role`,`name`,`vlan_addr`,`port`,`vlan_name`,`key`,
-                        `supernode_name`,`create_time`,`update_time`,`state`,`description` 
-                        from n2n where role = '{}' '''.format(
-            get_data.get('role'))
+                        `supernode_name`,`create_time`,`update_time`,`state`,`description`,
+                        `service_port`
+                        from n2n '''
+        if(param != "all"):
+            sql_query += " where role = '{}'".format(param)
 
         try:
             mydb_cursor.execute(sql_query)
@@ -139,11 +156,13 @@ def n2n_list(request):
                     "port": tup[4], "vlan_name": tup[5],
                     "key": tup[6],   "supernode_name": tup[7],
                     "create_time": str(tup[8]),  "update_time": str(tup[9]),
-                    "state": tup[10], "description": tup[11]
+                    "state": tup[10], "description": tup[11],
+                    "service_port": tup[12]
                 })
 
         except Exception as e:
-            logger.error("select query [{}] failed: {}".format(sql_query, e))
+            logger.error(
+                "select query [{}] failed: {}".format(sql_query, e))
             res["status"] = "mysql select failed: {}".format(e)
 
     else:
