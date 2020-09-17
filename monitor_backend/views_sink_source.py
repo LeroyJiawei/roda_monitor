@@ -16,16 +16,18 @@ def sink_source_registry(request):
 
     if ('role' in post_data and 'name' in post_data and
             'n2n_id' in post_data and 'source_data_system' in post_data
-            and 'source_info' in post_data):
+            and 'source_info' in post_data and 'docker_port' in post_data):
         sql_query = '''INSERT INTO sink_sources
                         (`n2n_id`, `role`, `name`, `create_time`,
                             `update_time`, `source_data_system`, `source_info`, 
-                            `state`, `description`)
+                            `state`, `description`,`docker_port`)
                         VALUES
-                        ( {}, "{}","{}",  now(), now(), "{}", "{}",'init', "{}");'''.format(
+                        ( {}, "{}","{}",  now(), now(), "{}", "{}",'init', {}, {});'''.format(
             post_data['n2n_id'], post_data['role'], post_data['name'],
             post_data['source_data_system'], post_data['source_info'],
-            post_data['description'] if 'description' in post_data else 'null')
+            "'{}'".format(post_data['description']
+                          )if 'description' in post_data else 'null',
+            post_data['docker_port'] if post_data['role'] != "sink" else 'null')
 
         try:
             mydb_cursor.execute(sql_query)
@@ -51,16 +53,17 @@ def sink_source_update(request):
 
     if ('id' in post_data and 'name' in post_data and
             'n2n_id' in post_data and 'source_data_system' in post_data
-            and 'source_info' in post_data):
+            and 'source_info' in post_data and 'docker_port' in post_data):
         sql_query = '''UPDATE sink_sources SET
                     `name` = '{}', `n2n_id`='{}', 
                     `source_data_system`='{}', `source_info`='{}',
-                    `update_time`=now(), `description`='{}' 
+                    `update_time`=now(), `description`='{}', `docker_port`={} 
                     WHERE id={}
                     '''.format(
             post_data['name'], post_data['n2n_id'],
             post_data['source_data_system'], post_data['source_info'],
             post_data['description'] if 'description' in post_data else 'null',
+            post_data['docker_port'] if post_data['role'] != "sink" else 'null',
             post_data['id'])
 
         try:
@@ -117,7 +120,7 @@ def sink_source_list(request):
                            `sink_sources`.`source_data_system`, `sink_sources`.`source_info`,
                            `n2n`.`id` as `n2n_id`,`n2n`.`name` as `n2n_name`,
                            `sink_sources`.`create_time`, `sink_sources`.`update_time`, 
-                           `sink_sources`.`state`, `sink_sources`.`description` 
+                           `sink_sources`.`state`, `sink_sources`.`description`,`sink_sources`.`docker_port`
                     FROM `sink_sources` JOIN `n2n` ON `sink_sources`.`n2n_id`=`n2n`.`id` '''
 
         if(param != "all"):
@@ -132,7 +135,7 @@ def sink_source_list(request):
                     "source_data_system": tup[3], "source_info": tup[4],
                     "n2n_id": tup[5], "n2n_name": tup[6],
                     "create_time": str(tup[7]), "update_time": str(tup[8]),
-                    "state": tup[9], "description": tup[10]
+                    "state": tup[9], "description": tup[10], "docker_port": tup[11]
                 })
 
         except Exception as e:
