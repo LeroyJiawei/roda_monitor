@@ -37,6 +37,8 @@ urlpatterns = [
     path('api/hub/info', views_hub.hub_info),
     path('api/hub/list_images', views_hub.hub_list_images),
     path('api/hub/delete_image', views_hub.hub_delete_image),
+    path('api/hub/list_docker_images', views_hub.hub_list_docker_images),
+    path('api/hub/build_docker_images', views_hub.hub_build_docker_images),
 
     path('api/getMatchTime', views.getMatchTime),
     path('api/getSubMatchTime', views.getSubMatchTime),

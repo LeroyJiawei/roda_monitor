@@ -78,7 +78,8 @@ TEMPLATES = [
 
 # 静态文件搜索路径
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "monitor_vue/velement/static")
+    os.path.join(BASE_DIR, "monitor_vue/velement/static"),
+    os.path.join(BASE_DIR, "image_build_files")
 ]
 
 WSGI_APPLICATION = 'roda_monitor.wsgi.application'
