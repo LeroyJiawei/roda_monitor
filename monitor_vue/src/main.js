@@ -13,7 +13,7 @@ import Sto from 'store';
 
 // axios
 import axios from "axios";
-
+// import VueAxios from 'vue-axios';
 // element-ui
 import ElementUI from "element-ui";
 // import "element-ui/lib/theme-chalk/index.css";
@@ -22,6 +22,7 @@ Vue.use(VueRouter);
 Vue.use(ElementUI);
 
 window.$config = {};
+// window.$config.HOST = 'http://192.168.31.52:80';
 window.$config.HOST = 'http://192.168.1.177';
 // window.$config.HOST = ''; // production
 
