@@ -4,17 +4,79 @@
       <v-chart ref="chart2" :options="option2" id="tpc" />
     </el-card>
 
+    <el-dialog title="请填入新增节点的信息：" :visible.sync="AddNodeFormVisible" center :append-to-body='true' :lock-scroll="false"
+      width="100%">
+      <el-form :model="addNodeData" status-icon ref="addNodeData" label-width="130px" class="InputNodeInfo"
+        :rules="rulesOfAddNode">
+
+        <el-form-item label="name" prop="name">
+          <el-input type="text" v-model="addNodeData.name" placeholder='请输入名称(必填)'></el-input>
+        </el-form-item>
+
+        <el-form-item label="role" prop="role">
+          <el-input type="text" v-model="addNodeData.role" placeholder='请输入角色(必填)' auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="vlan_addr" prop="vlan_addr">
+          <el-input type="text" v-model="addNodeData.vlan_addr" placeholder='请输入vlan地址(必填)' auto-complete="off">
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="vlan_name" prop="vlan_name">
+          <el-input type="text" v-model="addNodeData.vlan_name" placeholder='请输入vlan名称(必填)' auto-complete="off">
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="supernode_name" prop="supernode_name">
+          <el-input type="text" v-model="addNodeData.supernode_name" placeholder='请输入超节点名称(必填)' auto-complete="off">
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="servive_port">
+          <el-input type="text" v-model="addNodeData.servive_port" placeholder='(可选)' auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="key">
+          <el-input type="text" v-model="addNodeData.key" placeholder='(可选)' auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="description">
+          <el-input type="text" v-model="addNodeData.description" placeholder='(可选)' auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="addr">
+          <el-input type="text" v-model="addNodeData.addr" placeholder='(可选)' auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="AddNodeFormVisible = false; resetForm('addNodeData')">取 消</el-button>
+        <el-button type="primary" @click="submitNodeInfo('addNodeData')"> 增加节点 </el-button>
+      </div>
+
+    </el-dialog>
+
 
     <el-card style="margin-top:20px">
 
+      <div v-show="true" class="select">
+        <span v-text='tableHeadText'></span>
+        　　<select class="choice" v-on:change="indexSelect" v-model="edge_enum_choose">
+          　　　　<option v-for="item in edge_enum" v-bind:value="item.indexId">{{item.name}}</option>
+          　　</select>
+
+        <span>
+          <el-button type="primary" v-on:click="AddNodeFormVisible = true" style="margin:10px 0;">新增节点</el-button>
+        </span>
+      </div>
       <el-table :data="tableData" style="width: 100%" max-height="2500">
-        <el-table-column prop="rol" label="角色">
+        <el-table-column prop="role" label="角色">
         </el-table-column>
 
         <el-table-column prop="name" label="名称">
         </el-table-column>
 
-        <el-table-column prop="vlan_ip" label="vlan IP">
+        <el-table-column prop="vlan_addr" label="vlan IP">
         </el-table-column>
 
 
@@ -39,7 +101,7 @@
         <el-table-column prop="addr" label="地址">
         </el-table-column>
 
-        </el-table-column>
+
       </el-table>
     </el-card>
   </div>
@@ -51,6 +113,9 @@
   // import "echarts/lib/chart/line";
   // import "echarts/lib/component/polar";
   import echarts from "echarts";
+
+  // import obj from "../common/enum_edge";
+  // import Enum from "../common/Enum";
 
   var data2 = [
     {
@@ -102,6 +167,8 @@
     },
   ];
 
+  // let sourceTypeList =this.$enum.getValueDescList('SOURCE_IN_TYPE')  
+
   export default {
     components: {
       "v-chart": ECharts,
@@ -109,17 +176,73 @@
 
     data() {
       return {
+        rulesOfAddNode: {
+          name: [
+            { required: true, trigger: 'blur' },
+            { min: 1, message: '不能为空', trigger: 'blur' }
+          ],
+          role: [
+            { required: true, trigger: 'blur' },
+            { min: 1, message: '不能为空', trigger: 'blur' }
+          ],
+          vlan_addr: [
+            { required: true, trigger: 'blur' },
+            { min: 1, message: '不能为空', trigger: 'blur' }
+          ],
+          vlan_name: [
+            { required: true, trigger: 'blur' },
+            { min: 1, message: '不能为空', trigger: 'blur' }
+          ],
+          supernode_name: [
+            { required: true, trigger: 'blur' },
+            { min: 1, message: '不能为空', trigger: 'blur' }
+          ],
+        },
+        AddNodeFormVisible: false, // 是否显示新增节点框
+        addNodeData: {
+          "name": "",
+          "role": "",
+          "vlan_addr": "",
+          "vlan_name": "",
+          "supernode_name": "",
+          "servive_port": "", // 以下可选
+          "key": "",
+          "description": "",
+          "addr": ""
+        },
+        tableHeadText: '请选择表格类型：',
+        edge_enum_choose: 0,
+        edge_enum: [{
+          "indexId": 1,
+          "name": "supernode"
+        }, {
+          "indexId": 2,
+          "name": "source-edge"
+        }, {
+          "indexId": 3,
+          "name": "sink-edge"
+        }, {
+          "indexId": 4,
+          "name": "hub-edge"
+        }, {
+          "indexId": 5,
+          "name": "web-edge"
+        }, {
+          "indexId": 6,
+          "name": "all"
+        }],
+
         tableData: [{
-          rol: 'sink',
+          role: 'sink',
           name: '王小虎',
-          vlan_ip: '1.1.1.1',
-          vlan_name:'v1',
-          service_port:50,
-          supernode_name:'n1',
-          create_time:'2020-9-14',
-          update_time:'2020-9-15',
-          state:'open',
-          addr:'129号'
+          vlan_addr: '1.1.1.1',
+          vlan_name: 'v1',
+          service_port: 50,
+          supernode_name: 'n1',
+          create_time: '2020-9-14',
+          update_time: '2020-9-15',
+          state: 'open',
+          addr: '129号'
         }],
         option2: {
           grid: {
@@ -146,16 +269,53 @@
       };
     },
     created() {
-
+      this.edge_enum_choose = this.edge_enum[0].indexId;
     },
 
     methods: {
-      getTopoData() {
+      resetForm(formName) {  //  重置
+        this.$refs[formName].resetFields();
+      },
+      submitNodeInfo: function (formName) {  //  新增节点
+        // console.log(this.addNodeData)
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            this.AddNodeFormVisible=false;
+             this.$axios
+              .post(`${window.$config.HOST}/api/n2n/register`, {
+                params: this.addNodeData
+              })
+              .then((response) => {
+                
+                console.log(response);
+                alert('增加成功！')
+              })
+              .catch((error) => {
+                console.log(error);
+                alert('增加失败');
+              });
+
+          } else {
+            // console.log('error submit!!');
+            return false;
+          }
+        });
+
+      },
+
+      // 修改表格类型后重新获取数据
+      indexSelect() {
+        // console.log(this.edge_enum[this.edge_enum_choose - 1].name);
+        // this.getTableData();
+        this.getTopoData()
+      },
+
+      async getTopoData() {
         const _this = this
-        this.$axios
+        await this.$axios
           .get(`${window.$config.HOST}/api/n2n/topo`)
           .then((response) => {
-
+            // alert('begin to get Topo');
             _this.data2 = response.data.data.nodes;
             _this.edges2 = response.data.data.edges;
 
@@ -270,25 +430,44 @@
             theTopoChart.setOption(optionOfTopo, true);
             // console.log(_this.edges2);
             // console.log(_this.data2);
+            // alert('goodTopo');
           })
           .catch((error) => {
             console.log(error);
-            alert('bad');
+            alert('bad-topo-data');
           });
-      },
 
-      getTableData(){// 未实现
-        const _this = this
-        this.$axios
-          .get(`${window.$config.HOST}/api/n2n/list`,{
-            params:{
-              "role": ENUM('supernode', 'source-edge', 'sink-edge', 'hub-edge', 'web-edge', 'all' ) // 必需
+        await this.$axios
+          .get(`${window.$config.HOST}/api/n2n/list`, {
+            params: {
+              "role": this.edge_enum[this.edge_enum_choose - 1].name // 必需
             }
           })
           .then((response) => {
-              _this.tableData=response.data.data;
-              console.log(_this.tableData);
-              alert('goodTableData')
+            _this.tableData = response.data.data;
+            // console.log(_this.tableData);
+            // alert('goodTableData')
+          })
+          .catch((error) => {
+            console.log(error);
+            alert('bad-table-data');
+          });
+
+      },
+
+      async getTableData() {   // 这个函数不能和getTopoData同时执行，所以放到了getTopoData里面
+        const _this = this
+        alert('begin to get table data')
+        await this.$axios
+          .get(`${window.$config.HOST}/api/n2n/list`, {
+            params: {
+              "role": this.edge_enum[this.edge_enum_choose - 1].name // 必需
+            }
+          })
+          .then((response) => {
+            _this.tableData = response.data.data;
+            console.log(_this.tableData);
+            alert('goodTableData')
           })
           .catch((error) => {
             console.log(error);
@@ -298,7 +477,8 @@
     },
 
     mounted() {
-      this.getTopoData()
+      this.getTopoData();
+      // this.getTableData()
     }
   };
 </script>

@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="quick-container">
     <el-card class="quick-card">
       <v-chart ref="chart1" :options="option" />
@@ -228,4 +228,4 @@ export default {
     }
   }
 }
-</style>
+</style> -->

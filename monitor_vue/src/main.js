@@ -18,12 +18,43 @@ import axios from "axios";
 import ElementUI from "element-ui";
 // import "element-ui/lib/theme-chalk/index.css";
 
+// import Enum from 'vue-enum'
+// let enumInfo = {
+//   SOURCE_IN_TYPE: {
+//       PURCHASE_IN: {
+//           value: 1,
+//           desc: 'supernode'
+//       },
+//       REFUND_IN: {
+//           value: 2,
+//           desc: 'source-edge'
+//       },
+//       CHECK_IN: {
+//           value: 3,
+//           desc: 'sink-edge'
+//       },
+//       CONFIRM_IN: {
+//           value: 4,
+//           desc: 'hub-edge'
+//       },
+//       CONFIRM_IN: {
+//         value: 5,
+//         desc: 'web-edge'
+//     },
+//     CONFIRM_IN: {
+//       value: 6,
+//       desc: 'all'
+//   }
+//   }
+// };
+// Vue.use(Enum,{enumInfo});
+// Vue.prototype.$enum = Enum;
+
 Vue.use(VueRouter);
 Vue.use(ElementUI);
 
 window.$config = {};
-// window.$config.HOST = 'http://192.168.31.52:80';
-window.$config.HOST = 'http://192.168.1.177';
+window.$config.HOST = 'http://192.168.31.52:80';
 // window.$config.HOST = ''; // production
 
 // import { Message, loading } from 'element-ui';
