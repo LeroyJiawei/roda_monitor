@@ -54,6 +54,7 @@ Vue.use(VueRouter);
 Vue.use(ElementUI);
 
 window.$config = {};
+// window.$config.HOST = 'https://easy-mock.com/mock/5f6736c27304034f4b7541d4'
 window.$config.HOST = 'http://192.168.31.52:80';
 // window.$config.HOST = ''; // production
 

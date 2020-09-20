@@ -69,7 +69,8 @@
           <el-button type="primary" v-on:click="AddNodeFormVisible = true" style="margin:10px 0;">新增节点</el-button>
         </span>
       </div>
-      <el-table :data="tableData" style="width: 100%" max-height="2500">
+      <!-- stripe 是带斑马纹（相邻两行不同背景） -->
+      <el-table :data="tableData" stripe :border="true" style="width: 100%" max-height="2500">
         <el-table-column prop="role" label="角色">
         </el-table-column>
 
@@ -89,10 +90,10 @@
         <el-table-column prop="supernode_name" label="超节点名称">
         </el-table-column>
 
-        <el-table-column prop="create_time" label="创建时间">
+        <el-table-column prop="create_time" label="创建时间" sortable>
         </el-table-column>
 
-        <el-table-column prop="update_time" label="更新时间">
+        <el-table-column prop="update_time" label="更新时间" sortable>
         </el-table-column>
 
         <el-table-column prop="state" label="状态">
@@ -101,6 +102,16 @@
         <el-table-column prop="addr" label="地址">
         </el-table-column>
 
+        <el-table-column label="操作" fixed="right">
+          <template slot-scope="scope">
+            <el-button @click.native.prevent="editRow(scope.$index, scope.$row)" type="text" size="mini">
+              修改
+            </el-button>
+            <el-button @click.native.prevent="deleteRow(scope.$index)" type="danger" size="small">
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
 
       </el-table>
     </el-card>
@@ -233,6 +244,7 @@
         }],
 
         tableData: [{
+          id: "009",
           role: 'sink',
           name: '王小虎',
           vlan_addr: '1.1.1.1',
@@ -273,6 +285,32 @@
     },
 
     methods: {
+      deleteRow(index) {
+        console.log(this.tableData[index].id);
+        this.$axios
+          ({
+            url: `${window.$config.HOST}/api/n2n/delete`,
+            method: 'delete',
+            data: { "id": this.tableData[index].id }, // body参数
+          })
+          // 下面这种方式显示500错误
+          // .delete(`${window.$config.HOST}/api/n2n/delete`, 
+          //   {"id":this.tableData[index].id}
+          // )
+          .then((response) => {
+            console.log(response);
+            if (response.data.status == "OK")
+              alert('删除成功！');
+            else {
+              alert(response.data.status)
+              alert('删除失败!');
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            alert('删除失败');
+          });
+      },
       resetForm(formName) {  //  重置
         this.$refs[formName].resetFields();
       },
@@ -280,13 +318,28 @@
         // console.log(this.addNodeData)
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.AddNodeFormVisible=false;
-             this.$axios
-              .post(`${window.$config.HOST}/api/n2n/register`, {
-                params: this.addNodeData
+            this.AddNodeFormVisible = false;
+            this.$axios
+              ({
+                url: `${window.$config.HOST}/api/n2n/register`,
+                method: 'post',
+                data:this.addNodeData
+                // data: {
+                //   "name": this.addNodeData.name,
+                //   "role": this.addNodeData.role,
+                //   "vlan_addr": this.addNodeData.vlan_addr,
+                //   "vlan_name": this.addNodeData.vlan_name,
+                //   "supernode_name": this.addNodeData.supernode_name,
+                //   "servive_port": this.addNodeData.service_port, // 以下可选
+                //   "key": this.addNodeData.key,
+                //   "description": this.addNodeData.description,
+                //   "addr": this.addNodeData.addr
+                // } // body参数
               })
+              // .post(`${window.$config.HOST}/api/n2n/register`,
+              //   {data:this.addNodeData}
+              // )
               .then((response) => {
-                
                 console.log(response);
                 alert('增加成功！')
               })
@@ -314,6 +367,7 @@
         const _this = this
         await this.$axios
           .get(`${window.$config.HOST}/api/n2n/topo`)
+          // .get(`https://easy-mock.com/mock/5f6736c27304034f4b7541d4/api/n2n/topo`)
           .then((response) => {
             // alert('begin to get Topo');
             _this.data2 = response.data.data.nodes;
