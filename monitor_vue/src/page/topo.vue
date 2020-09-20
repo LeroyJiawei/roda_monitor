@@ -4,11 +4,69 @@
       <v-chart ref="chart2" :options="option2" id="tpc" />
     </el-card>
 
-    <el-dialog title="请填入新增节点的信息：" :visible.sync="AddNodeFormVisible" center :append-to-body='true' :lock-scroll="false"
+
+    <el-dialog title="修改页面" :visible.sync="modifyPageVisible" width="50%" :before-close="handleModifyClose">
+
+      <el-form :model="modifyNodeData" status-icon ref="modifyNodeData" label-width="130px" class="InputNodeInfo"
+        :rules="rulesOfAddNode">
+
+        <el-form-item label="角色" prop="role">
+          <el-input type="text" v-model="modifyNodeData.role" auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="名称" prop="name">
+          <el-input type="text" v-model="modifyNodeData.name"></el-input>
+        </el-form-item>
+
+        <el-form-item label="vlan IP" prop="vlan_addr">
+          <el-input type="text" v-model="modifyNodeData.vlan_addr" auto-complete="off">
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="vlan 名称" prop="vlan_name">
+          <el-input type="text" v-model="modifyNodeData.vlan_name" auto-complete="off">
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="超节点名称" prop="supernode_name">
+          <el-input type="text" v-model="modifyNodeData.supernode_name" auto-complete="off">
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="服务端口">
+          <el-input type="text" v-model="modifyNodeData.service_port" auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="创建时间">
+          <el-input type="text" v-model="modifyNodeData.create_time" auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="更新时间">
+          <el-input type="text" v-model="modifyNodeData.update_time" auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="状态">
+          <el-input type="text" v-model="modifyNodeData.state" auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="地址">
+          <el-input type="text" v-model="modifyNodeData.addr" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="modifyPageVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitModification('modifyNodeData')">提交修改</el-button>
+      </span>
+    </el-dialog>
+
+
+
+    <el-dialog title="请填入新增节点的信息：" :visible.sync="AddNodeFormVisible" center :append-to-body='0' :lock-scroll="true"
       width="100%">
       <el-form :model="addNodeData" status-icon ref="addNodeData" label-width="130px" class="InputNodeInfo"
         :rules="rulesOfAddNode">
-
+        <!-- prop往上传数据使得rule起作用 -->
         <el-form-item label="name" prop="name">
           <el-input type="text" v-model="addNodeData.name" placeholder='请输入名称(必填)'></el-input>
         </el-form-item>
@@ -32,8 +90,8 @@
           </el-input>
         </el-form-item>
 
-        <el-form-item label="servive_port">
-          <el-input type="text" v-model="addNodeData.servive_port" placeholder='(可选)' auto-complete="off"></el-input>
+        <el-form-item label="service_port">
+          <el-input type="text" v-model="addNodeData.service_port" placeholder='(可选)' auto-complete="off"></el-input>
         </el-form-item>
 
         <el-form-item label="key">
@@ -69,6 +127,8 @@
           <el-button type="primary" v-on:click="AddNodeFormVisible = true" style="margin:10px 0;">新增节点</el-button>
         </span>
       </div>
+
+
       <!-- stripe 是带斑马纹（相邻两行不同背景） -->
       <el-table :data="tableData" stripe :border="true" style="width: 100%" max-height="2500">
         <el-table-column prop="role" label="角色">
@@ -104,7 +164,7 @@
 
         <el-table-column label="操作" fixed="right">
           <template slot-scope="scope">
-            <el-button @click.native.prevent="editRow(scope.$index, scope.$row)" type="text" size="mini">
+            <el-button @click.native.prevent="modifyARow(scope.$index)" type="text" size="mini">
               修改
             </el-button>
             <el-button @click.native.prevent="deleteRow(scope.$index)" type="danger" size="small">
@@ -210,16 +270,29 @@
           ],
         },
         AddNodeFormVisible: false, // 是否显示新增节点框
+        modifyPageVisible: false,
         addNodeData: {
-          "name": "",
-          "role": "",
-          "vlan_addr": "",
-          "vlan_name": "",
-          "supernode_name": "",
-          "servive_port": "", // 以下可选
-          "key": "",
-          "description": "",
-          "addr": ""
+          name: "",
+          role: "",
+          vlan_addr: "",
+          vlan_name: "",
+          supernode_name: "",
+          service_port: "", // 以下可选
+          key: "",
+          description: "",
+          addr: ""
+        },
+        modifyNodeData: {
+          id: "",
+          name: "",
+          role: "",
+          vlan_addr: "",
+          vlan_name: "",
+          supernode_name: "",
+          service_port: "", // 以下可选
+          key: "",
+          description: "",
+          addr: ""
         },
         tableHeadText: '请选择表格类型：',
         edge_enum_choose: 0,
@@ -285,8 +358,62 @@
     },
 
     methods: {
+      handleModifyClose(done) {
+        this.$confirm('确认放弃修改？')
+          .then(_ => {
+            done();
+          })
+          .catch(_ => { });
+      },
+      modifyARow(index) { // 弹出出修改对话框
+        this.modifyNodeData = this.tableData[index];
+        this.modifyPageVisible = true;
+      },
+      submitModification(formName) {
+        this.modifyPageVisible = false;
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+        this.$axios
+          ({
+            url: `${window.$config.HOST}/api/n2n/update`,
+            method: 'post',
+            data: this.modifyNodeData, // body参数
+          })
+          .then((response) => {
+            console.log(response);
+            if (response.data.status == "OK") {
+              alert('修改成功！');
+              // 清空新增数据信息
+              this.modifyNodeData = {
+                id: "",
+                name: "",
+                role: "",
+                vlan_addr: "",
+                vlan_name: "",
+                supernode_name: "",
+                service_port: "", // 以下可选
+                key: "",
+                description: "",
+                addr: ""
+              };
+            }
+            else {
+              alert(response.data.status)
+              alert('修改失败!');
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            alert('修改失败');
+          });
+        } else {
+            // console.log('error submit!!');
+            return false;
+          }
+        });
+      },
       deleteRow(index) {
-        console.log(this.tableData[index].id);
+        // console.log(this.tableData[index].id);
         this.$axios
           ({
             url: `${window.$config.HOST}/api/n2n/delete`,
@@ -298,9 +425,10 @@
           //   {"id":this.tableData[index].id}
           // )
           .then((response) => {
-            console.log(response);
-            if (response.data.status == "OK")
+            // console.log(response);
+            if (response.data.status == "OK") {
               alert('删除成功！');
+            }
             else {
               alert(response.data.status)
               alert('删除失败!');
@@ -319,21 +447,22 @@
         this.$refs[formName].validate((valid) => {
           if (valid) {
             this.AddNodeFormVisible = false;
+            // console.log(this.addNodeData);
             this.$axios
               ({
                 url: `${window.$config.HOST}/api/n2n/register`,
                 method: 'post',
-                data:this.addNodeData
+                data: this.addNodeData
                 // data: {
-                //   "name": this.addNodeData.name,
-                //   "role": this.addNodeData.role,
-                //   "vlan_addr": this.addNodeData.vlan_addr,
-                //   "vlan_name": this.addNodeData.vlan_name,
-                //   "supernode_name": this.addNodeData.supernode_name,
-                //   "servive_port": this.addNodeData.service_port, // 以下可选
-                //   "key": this.addNodeData.key,
-                //   "description": this.addNodeData.description,
-                //   "addr": this.addNodeData.addr
+                //   name: this.addNodeData.name,
+                //   role: this.addNodeData.role,
+                //   vlan_addr: this.addNodeData.vlan_addr,
+                //   vlan_name: this.addNodeData.vlan_name,
+                //   supernode_name: this.addNodeData.supernode_name,
+                //   service_port: this.addNodeData.service_port, // 以下可选
+                //   key: this.addNodeData.key,
+                //   description: this.addNodeData.description,
+                //   addr: this.addNodeData.addr
                 // } // body参数
               })
               // .post(`${window.$config.HOST}/api/n2n/register`,
@@ -341,7 +470,21 @@
               // )
               .then((response) => {
                 console.log(response);
-                alert('增加成功！')
+                // 清空新增数据信息
+                this.addNodeData = {
+                  name: "",
+                  role: "",
+                  vlan_addr: "",
+                  vlan_name: "",
+                  supernode_name: "",
+                  service_port: "", // 以下可选
+                  key: "",
+                  description: "",
+                  addr: ""
+                };
+                if (response.data.status == "OK") {
+                  alert('增加成功！');
+                }
               })
               .catch((error) => {
                 console.log(error);
@@ -370,6 +513,7 @@
           // .get(`https://easy-mock.com/mock/5f6736c27304034f4b7541d4/api/n2n/topo`)
           .then((response) => {
             // alert('begin to get Topo');
+            // console.log(response.data)
             _this.data2 = response.data.data.nodes;
             _this.edges2 = response.data.data.edges;
 
