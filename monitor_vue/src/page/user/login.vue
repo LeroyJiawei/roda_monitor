@@ -139,7 +139,8 @@ export default {
   methods: {
     submitForm(name) {
       const that = this;
-      that.$router.push({path: '/quick'});
+      // that.$router.push({path: '/quick'});
+      that.$router.push({path: '/sink_source'});
       // that.$refs[name].validate((valid) => {
       //   if (valid) that.goLogin(); // 验证通过，前去登录
       // });

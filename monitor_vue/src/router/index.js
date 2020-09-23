@@ -1,8 +1,9 @@
 import Config from '../config/index';
 
 const E2E = r => require.ensure([], () => r(require('../page/perfomance/e2e')), 'e2e');
-const Topo = r => require.ensure([], () => r(require('../page/topo')), 'topo');
 const N2N = r => require.ensure([], () => r(require('../page/n2n')), 'n2n');
+// const Topo = r => require.ensure([], () => r(require('../page/topo')), 'topo');
+const sink_source = r => require.ensure([], () => r(require('../page/sink_source')), 'sink_source');
 const Hub = r => require.ensure([], () => r(require('../page/hub')), 'hub');
 
 //---------------------
@@ -52,7 +53,7 @@ export default [
     path: '/quick',
     name: 'Quick',
     component: Quick,
-    meta: {
+    meta: {  
       bcrumd: ['快速入门']
     }
     }, 
@@ -103,19 +104,19 @@ export default [
       }
     },
     { 
-      path: '/topo',
-      name: 'Topo',
-      component: Topo,
-      meta: {
-        bcrumd: ['拓扑']
-      }
-    },
-    { 
       path: '/n2n',
       name: 'N2N',
       component: N2N,
       meta: {
-        bcrumd: ['N2N']
+        bcrumd: ['n2n']// 右边页面的左上角的一个小标题
+      }
+    },
+    { 
+      path: '/sink_source',
+      name: 'sink_source',
+      component: sink_source,
+      meta: {
+        bcrumd: ['sink_source']
       }
     },
     { 

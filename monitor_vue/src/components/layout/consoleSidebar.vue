@@ -67,8 +67,8 @@
 <template>
   <div class="console-sidebar">
     <el-menu :unique-opened='true' :router='true' theme="dark" :default-active="defaultActive" class="sidebar-content">
-      <div class="sidebar-fold">版本1.0.0</div>
-      <el-menu-item index="/quick"><i class="el-icon-message"></i>快速入门</el-menu-item>
+      <div class="sidebar-fold">版本1.0.1</div>
+      <!-- <el-menu-item index="/quick"><i class="el-icon-message"></i>快速入门</el-menu-item> -->
       <!-- <el-submenu index="user">
         <template slot="title">
           <i class="el-icon-message"></i>
@@ -76,7 +76,7 @@
         </template>
         <el-menu-item index="/user"><i class="el-icon-document"></i>用户管理</el-menu-item>
       </el-submenu> -->
-      <el-menu-item index="/topo"><i class="el-icon-document"></i>TOPO</el-menu-item>
+      <el-menu-item index="/sink_source"><i class="el-icon-document"></i>sink_source</el-menu-item>
       <el-menu-item index="/n2n"><i class="el-icon-document"></i>N2N</el-menu-item>
       <el-submenu index="base">
         <template slot="title">
