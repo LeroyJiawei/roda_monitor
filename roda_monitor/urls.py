@@ -15,16 +15,18 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path, re_path
-from monitor_backend import views, views_n2n, views_sink_source, views_hub
+from monitor_backend import views, views_network, views_sink_source, views_hub, views_filter
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    # n2n
-    path('api/n2n/registry', views_n2n.n2n_registry),
-    path('api/n2n/update', views_n2n.n2n_update),
-    path('api/n2n/delete', views_n2n.n2n_delete),
-    path('api/n2n/list', views_n2n.n2n_list),
-    path('api/n2n/topo', views_n2n.n2n_topo),
+    # network
+    path('api/network/is_overlay', views_network.network_is_overlay),
+    path('api/network/set_overlay', views_network.network_set_overlay),
+    path('api/network/registry', views_network.network_registry),
+    path('api/network/update', views_network.network_update),
+    path('api/network/delete', views_network.network_delete),
+    path('api/network/list', views_network.network_list),
+    path('api/network/topo', views_network.network_topo),
 
     # sink and source
     path('api/sink_source/registry', views_sink_source.sink_source_registry),
@@ -39,6 +41,13 @@ urlpatterns = [
     path('api/hub/delete_image', views_hub.hub_delete_image),
     path('api/hub/list_docker_images', views_hub.hub_list_docker_images),
     path('api/hub/build_docker_images', views_hub.hub_build_docker_images),
+
+    # filter
+    path('api/filter/list', views_filter.filter_list),
+    path('api/filter/pull', views_filter.filter_pull_image),
+    path('api/filter/source_images', views_filter.filter_source_images),
+    path('api/filter/create_container', views_filter.filter_create_container),
+
 
     path('api/getMatchTime', views.getMatchTime),
     path('api/getSubMatchTime', views.getSubMatchTime),

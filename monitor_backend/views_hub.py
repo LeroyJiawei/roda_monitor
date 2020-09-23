@@ -6,7 +6,7 @@ import traceback
 from docker import Client as dockerClient
 from io import BytesIO
 
-from monitor_backend.views_commons import logger, mydb_cursor, mydb_client
+from monitor_backend.views_commons import logger, mydb_client
 
 
 @dj_http.require_GET
@@ -27,7 +27,7 @@ def hub_info(req):
         "port": hub_addr[1]
     }
 
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 @dj_http.require_GET
@@ -53,13 +53,16 @@ def hub_list_images(req):
                 "http://{}:{}/v2/{}/tags/list".format(hub_addr[0], hub_addr[1], repo))
             tag_list = hub_resp.json()
 
-            res["data"].append(tag_list)
+            res["data"].append({
+                "name": "{}:{}/{}".format(hub_addr[0], hub_addr[1], tag_list["name"]),
+                "tags": tag_list["tags"]
+            })
     except Exception as e:
         errmsg = "Get Hub repository tags failed: {}".format(e)
-        logger.info(errmsg)
+        logger.error(errmsg)
         res["status"] = errmsg
 
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 @dj_http.require_http_methods(["DELETE"])
@@ -103,23 +106,33 @@ def hub_delete_image(req):
     else:
         res["status"] = "mis parameter"
 
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 @dj_http.require_GET
 def hub_list_docker_images(req):
     res = {"status": "OK"}
 
+    sql_get_hub_addr = "select `vlan_addr` from `n2n` where `role` = 'hub-edge'"
+    try:
+        mydb_cursor.execute(sql_get_hub_addr)
+        hub_addr = mydb_cursor.fetchone()
+    except Exception as e:
+        logger.error("Get Hub vlan addr query [{}] failed: [{}]".format(
+            sql_get_hub_addr, e))
+        res["status"] = "Get Hub vlan addr query failed: [{}]".format(e)
+        return HttpResponse(json.dumps(res), content_type="application/json")
+
     try:
         docker_cli = dockerClient(
-            base_url='tcp://{}:{}'.format("10.30.30.1", "2375"))
+            base_url='tcp://{}:{}'.format(hub_addr[0], "2375"))
         res["data"] = docker_cli.images()
     except Exception as e:
         errmsg = "Get Hub docker engine images failed: [{}]".format(e)
         logger.error(errmsg)
         res["status"] = errmsg
 
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 # TODO, should have two ways to build a image:
@@ -160,6 +173,7 @@ def hub_build_docker_images(req):
             logger.error("Get Hub vlan addr query [{}] failed: [{}]".format(
                 sql_get_hub_addr, e))
             res["status"] = "Get Hub vlan addr query failed: [{}]".format(e)
+            return HttpResponse(json.dumps(res), content_type="application/json")
 
         file_bytes = BytesIO(dockerfile.encode("UTF-8"))
         try:
@@ -193,4 +207,4 @@ def hub_build_docker_images(req):
     else:
         res["status"] = "miss parameter"
 
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type="application/json")

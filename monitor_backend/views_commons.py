@@ -6,8 +6,11 @@ import traceback
 
 
 logging.basicConfig(level=logging.INFO,
-                    format='[%(asctime)s - %(name)s] - %(levelname)s - %(message)s')
+                    format="[%(asctime)s - %(filename)s:%(funcName)s:%(lineno)s"
+                    " - %(levelname)s] %(message)s")
 logger = logging.getLogger("Roda_monito_views")
+
+Is_overlay_network = False
 
 try:
     cfg = ConfigParser()
@@ -31,11 +34,33 @@ try:
         passwd=mysql_passwd,
         database=mysql_db
     )
-    mydb_cursor = mydb_client.cursor()
 
     influx_client = InfluxDBClient(influx_host, influx_port,
                                    influx_user, influx_passwd, influx_db)
+
+    sql_query = "SELECT `value` FROM `universe` WHERE `config_name`='is_overlay' "
+
+    mydb_cursor = mydb_client.cursor()
+    mydb_cursor.execute(sql_query)
+    resp = mydb_cursor.fetchall()
+    if(len(resp) >= 1 and len(resp[0]) >= 1):
+        Is_overlay_network = True if resp[0][0] != 0 else False
+    else:
+        raise ValueError(
+            "cannot get the information wether roda is use overlay network")
+
 except Exception as e:
-    logger.info(
+    logger.error(
         "init failed to parse configuration file or database connect: {}".format(e))
     traceback.print_exc()
+    exit(1)
+
+
+# :param key -- json key
+# :param http_param -- json form data from http request
+# :param is_int -- is current type int form
+def current_val_or_null(key, http_param, is_int):
+    if is_int:
+        return "{}".format(http_param[key]) if (key in http_param and http_param[key] != "") else 'null'
+    else:
+        return "'{}'".format(http_param[key]) if (key in http_param and http_param[key] != "") else 'null'

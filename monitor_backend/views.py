@@ -64,7 +64,7 @@ def getMatchTime(request):
             'variance': variance
         })
 
-    return HttpResponse(res)
+    return HttpResponse(res, content_type="application/json")
 
 
 @dj_http.require_GET
@@ -110,4 +110,4 @@ def getSubMatchTime(request):
             'variance': variance
         })
 
-    return HttpResponse(res)
+    return HttpResponse(res, content_type="application/json")
