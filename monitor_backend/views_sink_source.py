@@ -20,19 +20,20 @@ def sink_source_registry(request):
         'source_data_system' in post_data and
         'source_info' in post_data and
             'docker_port' in post_data):
-        sql_query = '''INSERT INTO sink_sources
-                        (`network_id`, `role`, `name`, `source_data_system`, 
-                        `source_info`,`docker_port`,`description`,
-                        `create_time`,`update_time`,`state`)
-                        VALUES
-                        ({},"{}","{}","{}","{}",{},{},now(),now(),'init');'''.format(
-            post_data['network_id'], post_data['role'], post_data['name'],
-            post_data['source_data_system'], post_data['source_info'],
-            roda.current_val_or_null("docker_port", post_data, True),
-            roda.current_val_or_null("description", post_data, False))
+        sql_query = "INSERT INTO sink_sources "\
+            " (`network_id`, `role`, `name`, `source_data_system`, "\
+            " `source_info`,`docker_port`,`description`,"\
+            " `create_time`,`update_time`,`state`)"\
+            " VALUES"\
+            " ({},'{}','{}','{}','{}',{},{},now(),now(),'init');".format(
+                post_data['network_id'], post_data['role'], post_data['name'],
+                post_data['source_data_system'], post_data['source_info'],
+                roda.current_val_or_null(
+                    "docker_port", post_data, True),
+                roda.current_val_or_null("description", post_data, False))
 
         try:
-            mydb_cursor.execute(sql_query)
+            roda.mydb_cursor.execute(sql_query)
             roda.mydb_client.commit()
         except Exception as e:
             roda.mydb_client.rollback()
@@ -55,20 +56,20 @@ def sink_source_list(request):
     param = get_data.get("role")
 
     if(param != None):
-        sql_query = '''SELECT `sink_sources`.`id`, `sink_sources`.`name`, `sink_sources`.`role`,
-                           `sink_sources`.`source_data_system`, `sink_sources`.`source_info`,
-                           `network`.`id` as `network_id`,`network`.`name` as `network_name`,
-                           `sink_sources`.`create_time`, `sink_sources`.`update_time`, 
-                           `sink_sources`.`state`, `sink_sources`.`description`,`sink_sources`.`docker_port`
-                    FROM `sink_sources` JOIN `network` ON `sink_sources`.`network_id`=`network`.`id` '''
+        sql_query = "SELECT `sink_sources`.`id`, `sink_sources`.`name`, `sink_sources`.`role`,"\
+            " `sink_sources`.`source_data_system`, `sink_sources`.`source_info`,"\
+            " `network`.`id` as `network_id`,`network`.`name` as `network_name`,"\
+            " `sink_sources`.`create_time`, `sink_sources`.`update_time`, "\
+            " `sink_sources`.`state`, `sink_sources`.`description`,`sink_sources`.`docker_port`"\
+                    " FROM `sink_sources` JOIN `network` ON `sink_sources`.`network_id`=`network`.`id` "
 
         if(param != "all"):
             sql_query += " WHERE `sink_sources`.`role` = '{}'".format(param)
 
         try:
-            mydb_cursor.execute(sql_query)
+            roda.mydb_cursor.execute(sql_query)
             res['data'] = []
-            for tup in mydb_cursor:
+            for tup in roda.mydb_cursor:
                 res['data'].append({
                     "id": tup[0], "name": tup[1], "role": tup[2],
                     "source_data_system": tup[3], "source_info": tup[4],
@@ -115,7 +116,7 @@ def sink_source_update(request):
                         post_data['id'])
 
         try:
-            mydb_cursor.execute(sql_query)
+            roda.mydb_cursor.execute(sql_query)
             roda.mydb_client.commit()
         except Exception as e:
             roda.mydb_client.rollback()
@@ -141,7 +142,7 @@ def sink_source_delete(request):
             delete_data['id'])
 
         try:
-            mydb_cursor.execute(sql_query)
+            roda.mydb_cursor.execute(sql_query)
             roda.mydb_client.commit()
         except Exception as e:
             roda.mydb_client.rollback()
@@ -162,8 +163,8 @@ def sink_source_topo(request):
     sink_sources = []
     sql_query = '''SELECT `name`,`id`,`role` FROM sink_sources '''
     try:
-        mydb_cursor.execute(sql_query)
-        sink_sources = mydb_cursor.fetchall()
+        roda.mydb_cursor.execute(sql_query)
+        sink_sources = roda.mydb_cursor.fetchall()
     except Exception as e:
         roda.logger.error(
             "Sink system query select query [{}] failed: {}".format(sql_query, e))

@@ -6,24 +6,26 @@ import traceback
 from docker import Client as dockerClient
 from io import BytesIO
 
-from monitor_backend.views_commons import logger, mydb_client
+import monitor_backend.views_commons as roda
 
 
 @dj_http.require_GET
 def hub_info(req):
     res = {"status": "OK", "data": {}}
 
-    sql_get_hub_addr = "select `vlan_addr`,`service_port` from `n2n` where `role` = 'hub-edge'"
+    sql_get_hub_addr = "SELECT `{}`,`service_port` FROM `network` "\
+        "WHERE `role` = 'hub-edge'".format(
+            "vlan_addr" if roda.Is_overlay_network else "addr")
     try:
-        mydb_cursor.execute(sql_get_hub_addr)
-        hub_addr = mydb_cursor.fetchone()
+        roda.mydb_cursor.execute(sql_get_hub_addr)
+        hub_addr = roda.mydb_cursor.fetchone()
     except Exception as e:
-        logger.error("Get Hub vlan addr query [{}] failed: [{}]".format(
+        roda.logger.error("Get Hub (vlan) addr query [{}] failed: [{}]".format(
             sql_get_hub_addr, e))
-        res["status"] = "Get Hub vlan addr query failed: [{}]".format(e)
+        res["status"] = "Get Hub (vlan) addr query failed: [{}]".format(e)
 
     res["data"] = {
-        "vlan_addr": hub_addr[0],
+        "vlan_addr" if roda.Is_overlay_network else "addr": hub_addr[0],
         "port": hub_addr[1]
     }
 
@@ -34,14 +36,16 @@ def hub_info(req):
 def hub_list_images(req):
     res = {"status": "OK", "data": []}
 
-    sql_get_hub_addr = "select `vlan_addr`,`service_port` from `n2n` where `role` = 'hub-edge'"
+    sql_get_hub_addr = "SELECT `{}`,`service_port` FROM `network` WHERE "\
+        " `role` = 'hub-edge'".format(
+            "vlan_addr" if roda.Is_overlay_network else "addr")
     try:
-        mydb_cursor.execute(sql_get_hub_addr)
-        hub_addr = mydb_cursor.fetchone()
+        roda.mydb_cursor.execute(sql_get_hub_addr)
+        hub_addr = roda.mydb_cursor.fetchone()
     except Exception as e:
-        logger.error("Get Hub vlan addr query [{}] failed: [{}]".format(
+        roda.logger.error("Get Hub (vlan) addr query [{}] failed: [{}]".format(
             sql_get_hub_addr, e))
-        res["status"] = "Get Hub vlan addr query failed: [{}]".format(e)
+        res["status"] = "Get Hub (vlan) addr query failed: [{}]".format(e)
 
     try:
         hub_resp = requests.get(
@@ -59,7 +63,7 @@ def hub_list_images(req):
             })
     except Exception as e:
         errmsg = "Get Hub repository tags failed: {}".format(e)
-        logger.error(errmsg)
+        roda.logger.error(errmsg)
         res["status"] = errmsg
 
     return HttpResponse(json.dumps(res), content_type="application/json")
@@ -77,14 +81,16 @@ def hub_delete_image(req):
 
     if('name' in delete_data and 'tag' in delete_data):
 
-        sql_get_hub_addr = "select `vlan_addr`,`service_port` from `n2n` where `role` = 'hub-edge'"
+        sql_get_hub_addr = "SELECT `{}`,`service_port` FROM `network` WHERE"\
+            " `role` = 'hub-edge'".format(
+                "vlan_addr" if roda.Is_overlay_network else "addr")
         try:
-            mydb_cursor.execute(sql_get_hub_addr)
-            hub_addr = mydb_cursor.fetchone()
+            roda.mydb_cursor.execute(sql_get_hub_addr)
+            hub_addr = roda.mydb_cursor.fetchone()
         except Exception as e:
-            logger.error("Get Hub vlan addr query [{}] failed: [{}]".format(
+            roda.logger.error("Get Hub (vlan) addr query [{}] failed: [{}]".format(
                 sql_get_hub_addr, e))
-            res["status"] = "Get Hub vlan addr query failed: [{}]".format(e)
+            res["status"] = "Get Hub (vlan) addr query failed: [{}]".format(e)
 
         try:
             hub_resp = requests.get(
@@ -92,7 +98,7 @@ def hub_delete_image(req):
                     hub_addr[0], hub_addr[1], delete_data["name"], delete_data["tag"]),
                 headers={"Accept": "application/vnd.docker.distribution.manifest.v2+json"})
             image_digest = hub_resp.headers["Docker-Content-Digest"]
-            logger.info(image_digest)
+            roda.logger.info(image_digest)
             hub_resp = requests.delete(
                 "http://{}:{}/v2/{}/manifests/{}".format(hub_addr[0], hub_addr[1],
                                                          delete_data["name"], image_digest))
@@ -101,7 +107,7 @@ def hub_delete_image(req):
 
         except Exception as e:
             errmsg = "Delete Hub repository tags failed: {}".format(e)
-            logger.error(errmsg)
+            roda.logger.error(errmsg)
             res["status"] = errmsg
     else:
         res["status"] = "mis parameter"
@@ -113,14 +119,16 @@ def hub_delete_image(req):
 def hub_list_docker_images(req):
     res = {"status": "OK"}
 
-    sql_get_hub_addr = "select `vlan_addr` from `n2n` where `role` = 'hub-edge'"
+    sql_get_hub_addr = "SELECT `{}` FROM `network` WHERE"\
+        " `role` = 'hub-edge'".format(
+            "vlan_addr" if roda.Is_overlay_network else "addr")
     try:
-        mydb_cursor.execute(sql_get_hub_addr)
-        hub_addr = mydb_cursor.fetchone()
+        roda.mydb_cursor.execute(sql_get_hub_addr)
+        hub_addr = roda.mydb_cursor.fetchone()
     except Exception as e:
-        logger.error("Get Hub vlan addr query [{}] failed: [{}]".format(
+        roda.logger.error("Get Hub (vlan) addr query [{}] failed: [{}]".format(
             sql_get_hub_addr, e))
-        res["status"] = "Get Hub vlan addr query failed: [{}]".format(e)
+        res["status"] = "Get Hub (vlan) addr query failed: [{}]".format(e)
         return HttpResponse(json.dumps(res), content_type="application/json")
 
     try:
@@ -129,7 +137,7 @@ def hub_list_docker_images(req):
         res["data"] = docker_cli.images()
     except Exception as e:
         errmsg = "Get Hub docker engine images failed: [{}]".format(e)
-        logger.error(errmsg)
+        roda.logger.error(errmsg)
         res["status"] = errmsg
 
     return HttpResponse(json.dumps(res), content_type="application/json")
@@ -165,14 +173,16 @@ def hub_build_docker_images(req):
 
     post_data = json.loads(req.body.decode("UTF-8"))
     if("name" in post_data):
-        sql_get_hub_addr = "select `vlan_addr` from `n2n` where `role` = 'hub-edge'"
+        sql_get_hub_addr = "SELECT `{}` FROM `network` WHERE"\
+            " `role` = 'hub-edge'".format(
+                "vlan_addr" if roda.Is_overlay_network else "addr")
         try:
-            mydb_cursor.execute(sql_get_hub_addr)
-            hub_addr = mydb_cursor.fetchone()
+            roda.mydb_cursor.execute(sql_get_hub_addr)
+            hub_addr = roda.mydb_cursor.fetchone()
         except Exception as e:
-            logger.error("Get Hub vlan addr query [{}] failed: [{}]".format(
+            roda.logger.error("Get Hub (vlan) addr query [{}] failed: [{}]".format(
                 sql_get_hub_addr, e))
-            res["status"] = "Get Hub vlan addr query failed: [{}]".format(e)
+            res["status"] = "Get Hub (vlan) addr query failed: [{}]".format(e)
             return HttpResponse(json.dumps(res), content_type="application/json")
 
         file_bytes = BytesIO(dockerfile.encode("UTF-8"))
@@ -190,19 +200,19 @@ def hub_build_docker_images(req):
                         post_data["name"],
                         post_data["tag"] if "tag" in post_data else "null",
                         line_stream_info)
-                    logger.error(errmsg)
+                    roda.logger.error(errmsg)
                     res["status"] = errmsg
                     break
-            logger.info("Build new image '{}:{}' success".format(
-                        post_data["name"],
-                        post_data["tag"] if "tag" in post_data else "null"))
+            roda.logger.info("Build new image '{}:{}' success".format(
+                post_data["name"],
+                post_data["tag"] if "tag" in post_data else "null"))
 
         except Exception as e:
             errmsg = "Build new image '{}:{}' failed: {}".format(
                 post_data["name"],
                 post_data["tag"] if "tag" in post_data else "null",
                 e)
-            logger.error(errmsg)
+            roda.logger.error(errmsg)
             res["status"] = errmsg
     else:
         res["status"] = "miss parameter"

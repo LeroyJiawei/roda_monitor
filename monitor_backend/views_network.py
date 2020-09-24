@@ -39,8 +39,8 @@ def network_set_overlay(req):
     if(target_value == "true" or target_value == "false"):
         value = target_value == "true"
 
-        sql_query = '''SELECT `id` FROM `network` WHERE `role` <> 'supernode' 
-            AND `{}` is null '''.format("vlan_addr" if value else "addr")
+        sql_query = "SELECT `id` FROM `network` WHERE `role` <> 'supernode' "\
+            "AND `{}` is null ".format("vlan_addr" if value else "addr")
         try:
             roda.mydb_cursor.execute(sql_query)
             resp = roda.mydb_cursor.fetchall()
@@ -52,8 +52,8 @@ def network_set_overlay(req):
             res["status"] = "Cannot set, some components does not have {}addresses".format(
                 "vlan " if value else "")
         else:
-            sql_query = '''UPDATE `universe` SET `value`={} WHERE 
-                `config_name`='is_overlay' '''.format(1 if value else 0)
+            sql_query = "UPDATE `universe` SET `value`={} WHERE "\
+                "`config_name`='is_overlay' ".format(1 if value else 0)
             try:
                 roda.mydb_cursor.execute(sql_query)
                 roda.mydb_client.commit()
