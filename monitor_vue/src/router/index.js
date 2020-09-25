@@ -1,7 +1,7 @@
 import Config from '../config/index';
 
 const E2E = r => require.ensure([], () => r(require('../page/perfomance/e2e')), 'e2e');
-const N2N = r => require.ensure([], () => r(require('../page/n2n')), 'n2n');
+const network = r => require.ensure([], () => r(require('../page/network')), 'network');
 // const Topo = r => require.ensure([], () => r(require('../page/topo')), 'topo');
 const sink_source = r => require.ensure([], () => r(require('../page/sink_source')), 'sink_source');
 const Hub = r => require.ensure([], () => r(require('../page/hub')), 'hub');
@@ -104,11 +104,11 @@ export default [
       }
     },
     { 
-      path: '/n2n',
-      name: 'N2N',
-      component: N2N,
+      path: '/network',
+      name: 'network',
+      component: network,
       meta: {
-        bcrumd: ['n2n']// 右边页面的左上角的一个小标题
+        bcrumd: ['network']// 右边页面的左上角的一个小标题
       }
     },
     { 

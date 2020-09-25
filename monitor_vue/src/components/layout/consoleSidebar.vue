@@ -77,7 +77,7 @@
         <el-menu-item index="/user"><i class="el-icon-document"></i>用户管理</el-menu-item>
       </el-submenu> -->
       <el-menu-item index="/sink_source"><i class="el-icon-document"></i>sink_source</el-menu-item>
-      <el-menu-item index="/n2n"><i class="el-icon-document"></i>N2N</el-menu-item>
+      <el-menu-item index="/network"><i class="el-icon-document"></i>network</el-menu-item>
       <el-submenu index="base">
         <template slot="title">
           <i class="el-icon-message"></i>

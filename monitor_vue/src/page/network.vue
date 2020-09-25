@@ -6,28 +6,23 @@
 
 
     <el-dialog title="修改页面" :visible.sync="modifyPageVisible" width="50%" :before-close="handleModifyClose">
-      <!-- "id": // 必需
-      "name":"", // 必需
-      "role": ENUM('supernode', 'source-edge', 'sink-edge', 'hub-edge', 'web-edge') // 必需
-      "vlan_addr": "",// 必需
-      "servive_port": "" ,  // 可选
-      "vlan_name": "",// 必需
-      "supernode_name": "",// 必需
-      "key":"", // 可选
-      "description":"" // 可选
-      "addr: "",// 可选 -->
+
       <el-form :model="modifyNodeData" status-icon ref="modifyNodeData" label-width="130px" class="InputNodeInfo"
-        :rules="rulesOfAddNode">
+        :rules="rulesOfNode">
+
+        <el-form-item label="名称" prop="name">
+          <el-input type="text" v-model="modifyNodeData.name"></el-input>
+        </el-form-item>
 
         <el-form-item label="角色" prop="role">
-          <el-select filterable class="role_modify_node" v-model="modifyNodeData.role" >
+          <el-select filterable class="role_modify_node" v-model="modifyNodeData.role">
             <!-- v-bind:value绑定的是name值，向上传给了v-model里的modifyNodeData.role -->
             　　　　<el-option v-for="item in edge_enum" :key="item.value" v-bind:value="item.name"></el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="名称" prop="name">
-          <el-input type="text" v-model="modifyNodeData.name"></el-input>
+        <el-form-item label="地址" prop="addr">
+          <el-input type="text" v-model="modifyNodeData.addr" auto-complete="off"></el-input>
         </el-form-item>
 
         <el-form-item label="vlan IP" prop="vlan_addr">
@@ -42,25 +37,23 @@
           <el-input type="text" v-model="modifyNodeData.supernode_name" auto-complete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="服务端口">
-          <el-input type="text" v-model="modifyNodeData.service_port" auto-complete="off"></el-input>
-        </el-form-item>
-
         <el-form-item label="key">
           <el-input type="text" v-model="modifyNodeData.key" auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="服务端口号">
+          <el-input type="text" v-model="modifyNodeData.service_port" auto-complete="off"></el-input>
         </el-form-item>
 
         <el-form-item label="描述">
           <el-input type="text" v-model="modifyNodeData.description" auto-complete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="地址">
-          <el-input type="text" v-model="modifyNodeData.addr" auto-complete="off"></el-input>
-        </el-form-item>
+
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-        <el-button @click="modifyPageVisible = false">取 消</el-button>
+        <el-button @click="modifyPageVisible = false;resetModifyNodeForm('modifyNodeData')">取 消</el-button>
         <el-button type="primary" @click="submitModification('modifyNodeData')">提交修改</el-button>
       </span>
     </el-dialog>
@@ -68,55 +61,56 @@
 
 
     <el-dialog title="请填入新增节点的信息：" :visible.sync="AddNodeFormVisible" center :append-to-body='0' :lock-scroll="true"
-      width="100%">
+      width="100%" :before-close="handleAddClose">
       <el-form :model="addNodeData" status-icon ref="addNodeData" label-width="130px" class="InputNodeInfo"
-        :rules="rulesOfAddNode">
+        :rules="rulesOfNode">
         <!-- prop往上传数据使得rule起作用 -->
         <el-form-item label="name" prop="name">
           <el-input type="text" v-model="addNodeData.name" placeholder='请输入名称(必填)'></el-input>
         </el-form-item>
 
         <el-form-item label="role" prop="role">
-          <el-select filterable class="role_add_node" v-model="addNodeData.role" placeholder='请输入名称(必填)'>
+          <el-select filterable class="role_add_node" v-model="addNodeData.role" placeholder='请选择角色(必选)'>
             <!-- v-bind:value绑定的是name值，向上传给了v-model里的addNodeData.role -->
             　　　　<el-option v-for="item in edge_enum" :key="item.value" v-bind:value="item.name"></el-option>
           </el-select>
         </el-form-item>
 
+        <el-form-item label="addr" prop="addr">
+          <el-input type="text" v-model="addNodeData.addr" placeholder='请输入地址(必填)' auto-complete="off"></el-input>
+        </el-form-item>
+
         <el-form-item label="vlan_addr" prop="vlan_addr">
-          <el-input type="text" v-model="addNodeData.vlan_addr" placeholder='请输入vlan地址(必填)' auto-complete="off">
+          <el-input type="text" v-model="addNodeData.vlan_addr" placeholder='请输入vlan地址' auto-complete="off">
           </el-input>
         </el-form-item>
 
         <el-form-item label="vlan_name" prop="vlan_name">
-          <el-input type="text" v-model="addNodeData.vlan_name" placeholder='请输入vlan名称(必填)' auto-complete="off">
+          <el-input type="text" v-model="addNodeData.vlan_name" placeholder='请输入vlan名称' auto-complete="off">
           </el-input>
         </el-form-item>
 
         <el-form-item label="supernode_name" prop="supernode_name">
-          <el-input type="text" v-model="addNodeData.supernode_name" placeholder='请输入超节点名称(必填)' auto-complete="off">
+          <el-input type="text" v-model="addNodeData.supernode_name" placeholder='请输入超节点名称' auto-complete="off">
           </el-input>
         </el-form-item>
 
-        <el-form-item label="service_port">
+        <el-form-item label="key" prop="key">
+          <el-input type="text" v-model="addNodeData.key" placeholder='请输入key' auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="service_port" prop="service_port">
           <el-input type="text" v-model="addNodeData.service_port" placeholder='(可选)' auto-complete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="key">
-          <el-input type="text" v-model="addNodeData.key" placeholder='(可选)' auto-complete="off"></el-input>
-        </el-form-item>
-
-        <el-form-item label="description">
+        <el-form-item label="description" prop="description">
           <el-input type="text" v-model="addNodeData.description" placeholder='(可选)' auto-complete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="addr">
-          <el-input type="text" v-model="addNodeData.addr" placeholder='(可选)' auto-complete="off"></el-input>
-        </el-form-item>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="AddNodeFormVisible = false; resetForm('addNodeData')">取 消</el-button>
+        <el-button @click="AddNodeFormVisible = false; resetAddNodeForm('addNodeData')">取 消</el-button>
         <el-button type="primary" @click="submitNodeInfo('addNodeData')"> 增加节点 </el-button>
       </div>
 
@@ -133,9 +127,9 @@
           　　　　<el-option v-for="item in edge_enum" :key="item.value" v-bind:value="item.name"></el-option>
           　　</el-select>
 
-        <span>
-          <el-button type="primary" v-on:click="AddNodeFormVisible = true" style="margin:10px 0;">新增节点</el-button>
-        </span>
+
+        <el-button type="primary" v-on:click="AddNodeFormVisible = true" style="margin:10px 0;">新增节点</el-button>
+        <el-button type="primary" @click.native.prevent="reverseOverlay()" style="margin:10px 0;">反转overlay</el-button>
       </div>
 
 
@@ -170,6 +164,12 @@
         </el-table-column>
 
         <el-table-column prop="addr" label="地址">
+        </el-table-column>
+
+        <el-table-column prop="description" label="描述">
+        </el-table-column>
+
+        <el-table-column prop="key" label="key">
         </el-table-column>
 
         <el-table-column label="操作" fixed="right">
@@ -261,53 +261,74 @@
     },
 
     data() {
+      var validate_vlanaddr = (rule, value, callback) => {
+        callback();
+        if (!this.is_overlay_network && !value)
+          return callback(new Error('名称不能为空'));
+        callback();
+      };
       return {
-        rulesOfAddNode: {
+        couldSubmitModifyNode: false,
+        couldSubmitAddNode: false, // 检测合格后才能开始提交
+        is_overlay_network: true,
+        rulesOfNode: {
           name: [
             { required: true, trigger: 'blur' },
             { min: 1, message: '不能为空', trigger: 'blur' }
+            // { validator: validateName, trigger: 'blur' }
           ],
           role: [
             { required: true, trigger: 'blur' },
             { min: 1, message: '不能为空', trigger: 'blur' }
           ],
+          addr: [
+            { required: true, trigger: 'blur' },
+            { min: 1, message: '不能为空', trigger: 'blur' }
+          ],
           vlan_addr: [
-            { required: true, trigger: 'blur' },
-            { min: 1, message: '不能为空', trigger: 'blur' }
+            // { required: true, trigger: 'blur' },
+            // { min: 1, message: '不能为空', trigger: 'blur' }
+            { validator: validate_vlanaddr, trigger: 'blur' }
           ],
-          vlan_name: [
-            { required: true, trigger: 'blur' },
-            { min: 1, message: '不能为空', trigger: 'blur' }
-          ],
-          supernode_name: [
-            { required: true, trigger: 'blur' },
-            { min: 1, message: '不能为空', trigger: 'blur' }
-          ],
+          // vlan_name: [
+          //   { required: true, trigger: 'blur' },
+          //   { min: 1, message: '不能为空', trigger: 'blur' }
+          // ],
+          // supernode_name: [
+          //   { required: true, trigger: 'blur' },
+          //   { min: 1, message: '不能为空', trigger: 'blur' }
+          // ],
+          // key: [
+          //   { required: true, trigger: 'blur' },
+          //   { min: 1, message: '不能为空', trigger: 'blur' }
+          // ]
         },
         AddNodeFormVisible: false, // 是否显示新增节点框
         modifyPageVisible: false,
         addNodeData: {
           name: "",
           role: "",
-          vlan_addr: "",
-          vlan_name: "",
-          supernode_name: "",
-          service_port: "", // 以下可选
-          key: "",
-          description: "",
-          addr: ""
+          addr: "",
+          // 以下可选
+          vlan_addr: "", //  当is_overlay(来自/api/network/is_overlay接口)时则必需
+          vlan_name: "", //  当is_overlay(来自/api/network/is_overlay接口)时则必需
+          supernode_name: "",   //当is_overlay(来自/api/network/is_overlay接口)时则必需
+          key: "",       //  当is_overlay(来自/api/network/is_overlay接口)时则必需
+          service_port: "",
+          description: ""
         },
         modifyNodeData: {
           id: "",
           name: "",
           role: "",
-          vlan_addr: "",
-          vlan_name: "",
-          supernode_name: "",
-          service_port: "", // 以下可选
-          key: "",
-          description: "",
-          addr: ""
+          addr: "",
+          // 以下可选
+          vlan_addr: "", //当is_overlay(来自/api/network/is_overlay接口)时则必需
+          vlan_name: "", //当is_overlay(来自/api/network/is_overlay接口)时则必需
+          supernode_name: "",//当is_overlay(来自/api/network/is_overlay接口)时则必需
+          key: "",//当is_overlay(来自/api/network/is_overlay接口)时则必需
+          service_port: "",
+          description: ""
         },
         tableHeadText: '请选择表格类型：',
         edge_enum_choose: 'supernode',   //  表格类型选择值记录
@@ -338,10 +359,12 @@
           vlan_addr: '1.1.1.1',
           vlan_name: 'v1',
           service_port: 50,
+          key: 'key1',
           supernode_name: 'n1',
           create_time: '2020-9-14',
           update_time: '2020-9-15',
           state: 'open',
+          description: '',
           addr: '129号'
         }],
         option2: {
@@ -370,68 +393,161 @@
     },
     created() {
       this.edge_enum_choose = this.edge_enum[0].name;
+      // this.is_overlay();  // 这样子调用赋值来判断是不行的，和其他axios有冲突
+      // console.log(this.is_overlay_network);
+      // console.log('this.is_overlay_network');
     },
 
     methods: {
+      reverseOverlay() {
+        this.is_overlay(3);  //  先发is_overlay请求，给is_overlay_network赋正确的值
+      },
+      async is_overlay(id) {  // 检测是否是overlay网络，如果是，则检测相关字段非空
+        await this.$axios
+          .get(`${window.$config.HOST}/api/network/is_overlay`)
+          .then((response) => {
+            // console.log(response);
+            this.is_overlay_network = response.data.data;
+            // alert('is_overlay函数调用成功！');
+            if (this.is_overlay_network)  //   当is_overlay时某些数据是必须的
+            {
+              // alert(this.addNodeData.vlan_addr==""); // 返回true
+              // alert(this.addNodeData.vlan_addr==null);  //  返回false！
+              if (id == 1) // 代表新增节点的函数调用overlay
+              {
+                if (this.addNodeData.vlan_addr == "" || this.addNodeData.vlan_name == "" || this.addNodeData.supernode_name == "" || this.addNodeData.key == "") {
+                  alert('当前网络是overlay网络！vlan_addr、vlan_name、supernode_name、key不能为空！');
+                  return;
+                }
+              }
+              else if (id == 2) {// 代表修改节点的函数调用overlay
+                if (this.modifyNodeData.vlan_addr == "" || this.modifyNodeData.vlan_name == "" || this.modifyNodeData.supernode_name == "" || this.modifyNodeData.key == "") {
+                  alert('当前网络是overlay网络！vlan_addr、vlan_name、supernode_name、key不能为空！');
+                  return;
+                }
+              }
+            }
+            if (id == 1)
+              this.couldSubmitAddNode = true;
+            else if (id == 2)
+              this.couldSubmitModifyNode = true;
+            else if (id == 3) {
+              this.$axios
+                .get(`${window.$config.HOST}/api/network/set_overlay`,
+                  { params: { value: !this.is_overlay_network } })
+                .then((response) => {
+                  console.log(response);
+                  if (response.data.status == "OK") {
+                    this.is_overlay_network = !this.is_overlay_network;
+                    alert('反转成功！');
+                    if (this.is_overlay_network)
+                      alert('当前网络为overlay网络！');
+                    else alert('当前网络不是overlay网络！');
+                  }
+                  else {
+                    alert('反转失败！');
+                    alert(response.data.status);
+                  }
+                })
+                .catch((error) => {
+                  console.log(error);
+                  console.log(response);
+                  alert('is_overlay函数id==3调用错误');
+                });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            console.log(response);
+            alert('is_overlay函数调用错误');
+          });
+      },
+
       handleModifyClose(done) {
         this.$confirm('确认放弃修改？')
           .then(_ => {
+            // 清空新增数据信息
+            this.modifyNodeData = {
+              id: "",
+              name: "",
+              role: "",
+              vlan_addr: "",
+              vlan_name: "",
+              supernode_name: "",
+              service_port: "", // 以下可选
+              key: "",
+              description: "",
+              addr: ""
+            };
             done();
           })
           .catch(_ => { });
       },
       modifyARow(index) { // 弹出出修改对话框
-       
+
         // 从表格中获取部分数据(相交的）而不是全部!所以单独列出
-        this.modifyNodeData.id=this.tableData[index].id;
-        this.modifyNodeData.role=this.tableData[index].role;
-        this.modifyNodeData.name=this.tableData[index].name;
-        this.modifyNodeData.vlan_addr=this.tableData[index].vlan_addr;
-        this.modifyNodeData.vlan_name=this.tableData[index].vlan_name;
-        this.modifyNodeData.supernode_name=this.tableData[index].supernode_name;
-        this.modifyNodeData.service_port=this.tableData[index].service_port;
-        this.modifyNodeData.addr=this.tableData[index].addr;
+        this.modifyNodeData.id = this.tableData[index].id;
+        this.modifyNodeData.role = this.tableData[index].role;
+        this.modifyNodeData.name = this.tableData[index].name;
+        this.modifyNodeData.vlan_addr = this.tableData[index].vlan_addr;
+        this.modifyNodeData.vlan_name = this.tableData[index].vlan_name;
+        this.modifyNodeData.supernode_name = this.tableData[index].supernode_name;
+        this.modifyNodeData.service_port = this.tableData[index].service_port;
+        this.modifyNodeData.addr = this.tableData[index].addr;
+        this.modifyNodeData.description = this.tableData[index].description;
+        this.modifyNodeData.key = this.tableData[index].key;
+
 
         this.modifyPageVisible = true;
       },
+      resetModifyNodeForm(formName) {  //  重置，取消新增节点后清空输入的节点信息
+        this.$refs[formName].resetFields();
+      },
       submitModification(formName) {
-        this.modifyPageVisible = false;
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.$axios
-              ({
-                url: `${window.$config.HOST}/api/n2n/update`,
-                method: 'post',
-                data: this.modifyNodeData, // body参数
-              })
-              .then((response) => {
-                console.log(response);
-                if (response.data.status == "OK") {
-                  alert('修改成功！');
-                  // 清空新增数据信息
-                  this.modifyNodeData = {
-                    id: "",
-                    name: "",
-                    role: "",
-                    vlan_addr: "",
-                    vlan_name: "",
-                    supernode_name: "",
-                    service_port: "", // 以下可选
-                    key: "",
-                    description: "",
-                    addr: ""
-                  };
-                }
-                else {
-                  alert(response.data.status);
-                  alert('修改失败!');
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-                alert('修改失败');
-              });
+            this.is_overlay(2);
+            setTimeout(() => {  //  设置延时等待is_overlay函数完成
+              if (this.couldSubmitModifyNode) {
+                this.couldSubmitModifyNode = false;
+                this.$axios
+                  ({
+                    url: `${window.$config.HOST}/api/network/update`,
+                    method: 'post',
+                    data: this.modifyNodeData // body参数
+                  })
+                  .then((response) => {
+                    console.log(response);
+                    if (response.data.status == "OK") {
+                      alert('修改成功！');
+                      this.modifyPageVisible = false;
+                      // 清空新增数据信息
+                      this.modifyNodeData = {
+                        id: "",
+                        name: "",
+                        role: "",
+                        vlan_addr: "",
+                        vlan_name: "",
+                        supernode_name: "",
+                        service_port: "", // 以下可选
+                        key: "",
+                        description: "",
+                        addr: ""
+                      };
+                    }
+                    else {
+                      alert('修改失败!');
+                      alert(response.data.status);
+                    }
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                    alert('修改失败，前后端通信错误');
+                  });
+              }
+            }, 500);// setTimeout 结束
           } else {
+            alert('请填满相关内容');
             // console.log('error submit!!');
             return false;
           }
@@ -441,7 +557,7 @@
         // console.log(this.tableData[index].id);
         this.$axios
           ({
-            url: `${window.$config.HOST}/api/n2n/delete`,
+            url: `${window.$config.HOST}/api/network/delete`,
             method: 'delete',
             data: { "id": this.tableData[index].id }, // body参数
           })
@@ -455,86 +571,113 @@
               alert('删除成功！');
             }
             else {
-              alert(response.data.status)
               alert('删除失败!');
+              alert(response.data.status)    
             }
           })
           .catch((error) => {
             console.log(error);
-            alert('删除失败');
+            alert('删除失败，前后端通信错误');
           });
       },
-      resetForm(formName) {  //  重置，取消新增节点后清空输入的节点信息
+      resetAddNodeForm(formName) {  //  重置，取消新增节点后清空输入的节点信息
         this.$refs[formName].resetFields();
       },
-      submitNodeInfo: function (formName) {  //  新增节点
+      handleAddClose(done) {
+        this.$confirm('确认放弃新增节点？')
+          .then(_ => {
+            // 清空新增数据信息
+            this.addNodeData = {
+              name: "",
+              role: "",
+              vlan_addr: "",
+              vlan_name: "",
+              supernode_name: "",
+              service_port: "", // 以下可选
+              key: "",
+              description: "",
+              addr: ""
+            };
+            done();
+          })
+          .catch(_ => { });
+      },
+      async submitNodeInfo(formName) {  //  新增节点
         // console.log(this.addNodeData)
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.AddNodeFormVisible = false;
             // console.log(this.addNodeData);
-            this.$axios
-              ({
-                url: `${window.$config.HOST}/api/n2n/register`,
-                method: 'post',
-                data: this.addNodeData
-                // data: {
-                //   name: this.addNodeData.name,
-                //   role: this.addNodeData.role,
-                //   vlan_addr: this.addNodeData.vlan_addr,
-                //   vlan_name: this.addNodeData.vlan_name,
-                //   supernode_name: this.addNodeData.supernode_name,
-                //   service_port: this.addNodeData.service_port, // 以下可选
-                //   key: this.addNodeData.key,
-                //   description: this.addNodeData.description,
-                //   addr: this.addNodeData.addr
-                // } // body参数
-              })
-              // .post(`${window.$config.HOST}/api/n2n/register`,
-              //   {data:this.addNodeData}
-              // )
-              .then((response) => {
-                console.log(response);
-                // 清空新增数据信息
-                this.addNodeData = {
-                  name: "",
-                  role: "",
-                  vlan_addr: "",
-                  vlan_name: "",
-                  supernode_name: "",
-                  service_port: "", // 以下可选
-                  key: "",
-                  description: "",
-                  addr: ""
-                };
-                if (response.data.status == "OK") {
-                  alert('增加成功！');
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-                alert('增加失败');
-              });
-
+            this.is_overlay(1);
+            setTimeout(() => {  //  设置延时等待is_overlay函数完成
+              if (this.couldSubmitAddNode) {
+                this.couldSubmitAddNode = false;
+                this.$axios
+                  ({
+                    url: `${window.$config.HOST}/api/network/register`,
+                    method: 'post',
+                    data: this.addNodeData
+                    // data: {
+                    //   name: this.addNodeData.name,
+                    //   role: this.addNodeData.role,
+                    //   vlan_addr: this.addNodeData.vlan_addr,
+                    //   vlan_name: this.addNodeData.vlan_name,
+                    //   supernode_name: this.addNodeData.supernode_name,
+                    //   service_port: this.addNodeData.service_port, // 以下可选
+                    //   key: this.addNodeData.key,
+                    //   description: this.addNodeData.description,
+                    //   addr: this.addNodeData.addr
+                    // } // body参数
+                  })
+                  // .post(`${window.$config.HOST}/api/n2n/register`,
+                  //   {data:this.addNodeData}
+                  // )
+                  .then((response) => {
+                    if (response.data.status == "OK") {
+                      alert('增加成功！');
+                      // 清空新增数据信息
+                      this.addNodeData = {
+                        name: "",
+                        role: "",
+                        vlan_addr: "",
+                        vlan_name: "",
+                        supernode_name: "",
+                        service_port: "", // 以下可选
+                        key: "",
+                        description: "",
+                        addr: ""
+                      };
+                      this.AddNodeFormVisible = false;// 增加成功时才退了这个对话框
+                    }
+                    else {
+                      alert('增加失败!');
+                      alert(response.data);
+                      // console.log(response);
+                    }
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                    alert('增加失败，前后端通信错误');
+                  });
+              } // end if
+            }, 500);// setTimeout 结束
           } else {
             // console.log('error submit!!');
             return false;
           }
         });
-
       },
 
       // 修改表格类型后重新获取数据
       indexSelect() {
         // console.log(this.edge_enum_choose);
         // this.getTableData();
-        this.getTopoData()
+        this.getTopoAndTableData()
       },
 
-      async getTopoData() {
+      async getTopoAndTableData() {
         const _this = this
         await this.$axios
-          .get(`${window.$config.HOST}/api/n2n/topo`)
+          .get(`${window.$config.HOST}/api/network/topo`)
           // .get(`https://easy-mock.com/mock/5f6736c27304034f4b7541d4/api/n2n/topo`)
           .then((response) => {
             // alert('begin to get Topo');
@@ -545,7 +688,7 @@
             var optionOfTopo = {
               title: {
                 show: true,
-                text: '系统拓扑图',
+                text: 'N2N系统拓扑图',
                 subtext: 'source和sink节点',
                 left: "auto",
                 top: "auto",
@@ -562,7 +705,7 @@
                 //   return a.name;
                 // })
               }],
-              animationDuration: 3000,
+              animationDuration: 2000,
               coordinateSystem: 'none',
               hoverAnimation: 1,
               // legend: [{
@@ -605,7 +748,6 @@
                   edges: _this.edges2,
 
                   edgeSymbolSize: 120,
-
 
                   focusNodeAdjacency: 1,
                   itemStyle: {// 点周围的阴影
@@ -652,7 +794,7 @@
           });
 
         await this.$axios
-          .get(`${window.$config.HOST}/api/n2n/list`, {
+          .get(`${window.$config.HOST}/api/network/list`, {
             params: {
               "role": this.edge_enum_choose // 必需
             }
@@ -666,16 +808,15 @@
             console.log(error);
             alert('bad-table-data');
           });
-
       },
 
-      async getTableData() {   // 这个函数不能和getTopoData同时执行，所以放到了getTopoData里面
+      async getTableData() {   // 这个函数不能和getTopoAndTableData同时执行，所以放到了getTopoAndTableData里面
         const _this = this
         alert('begin to get table data')
         await this.$axios
-          .get(`${window.$config.HOST}/api/n2n/list`, {
+          .get(`${window.$config.HOST}/api/network/list`, {
             params: {
-              "role": this.edge_enum[this.edge_enum_choose - 1].name // 必需
+              "role": this.edge_enum_choose // 必需 // 必需
             }
           })
           .then((response) => {
@@ -691,7 +832,7 @@
     },
 
     mounted() {
-      this.getTopoData();
+      this.getTopoAndTableData();
       // this.getTableData()
     }
   };
