@@ -47,10 +47,10 @@ urlpatterns = [
     path('api/filter/pull', views_filter.filter_pull_image),
     path('api/filter/source_images', views_filter.filter_source_images),
     path('api/filter/create_container', views_filter.filter_create_container),
+    path('api/filter/match_perf', views_filter.filter_get_match_perf),
+    path('api/filter/end_perf', views_filter.filter_get_e2e_perf),
 
 
-    path('api/getMatchTime', views.getMatchTime),
-    path('api/getSubMatchTime', views.getSubMatchTime),
 
     re_path(r'^.*$', views.index_fun)
 ]

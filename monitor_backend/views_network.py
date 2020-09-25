@@ -71,7 +71,6 @@ def network_set_overlay(req):
 def network_registry(req):
     res = {"status": "OK"}
 
-    roda.logger.info(req.body)
     # get post body json data
     post_data = json.loads(req.body.decode("UTF-8"))
 

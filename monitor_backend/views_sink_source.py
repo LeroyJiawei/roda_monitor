@@ -19,18 +19,20 @@ def sink_source_registry(request):
         'network_id' in post_data and
         'source_data_system' in post_data and
         'source_info' in post_data and
-            'docker_port' in post_data):
+        'docker_port' in post_data and
+            (post_data['role'] == "sink" or 'ap_hostname' in post_data)):
         sql_query = "INSERT INTO sink_sources "\
             " (`network_id`, `role`, `name`, `source_data_system`, "\
-            " `source_info`,`docker_port`,`description`,"\
+            " `source_info`,`docker_port`,`description`, `ap_hostname` "\
             " `create_time`,`update_time`,`state`)"\
             " VALUES"\
-            " ({},'{}','{}','{}','{}',{},{},now(),now(),'init');".format(
+            " ({},'{}','{}','{}','{}',{},{},{},now(),now(),'init');".format(
                 post_data['network_id'], post_data['role'], post_data['name'],
                 post_data['source_data_system'], post_data['source_info'],
                 roda.current_val_or_null(
                     "docker_port", post_data, True),
-                roda.current_val_or_null("description", post_data, False))
+                roda.current_val_or_null("description", post_data, False),
+                roda.current_val_or_null("ap_hostname", post_data, False))
 
         try:
             roda.mydb_cursor.execute(sql_query)
@@ -60,7 +62,8 @@ def sink_source_list(request):
             " `sink_sources`.`source_data_system`, `sink_sources`.`source_info`,"\
             " `network`.`id` as `network_id`,`network`.`name` as `network_name`,"\
             " `sink_sources`.`create_time`, `sink_sources`.`update_time`, "\
-            " `sink_sources`.`state`, `sink_sources`.`description`,`sink_sources`.`docker_port`"\
+            " `sink_sources`.`state`, `sink_sources`.`description`,"\
+            "`sink_sources`.`docker_port`,`sink_sources`.`ap_hostname` "\
                     " FROM `sink_sources` JOIN `network` ON `sink_sources`.`network_id`=`network`.`id` "
 
         if(param != "all"):
@@ -75,7 +78,8 @@ def sink_source_list(request):
                     "source_data_system": tup[3], "source_info": tup[4],
                     "network_id": tup[5], "network_name": tup[6],
                     "create_time": str(tup[7]), "update_time": str(tup[8]),
-                    "state": tup[9], "description": tup[10], "docker_port": tup[11]
+                    "state": tup[9], "description": tup[10], "docker_port": tup[11],
+                    "ap_hostname": tup[12]
                 })
 
         except Exception as e:
@@ -101,11 +105,13 @@ def sink_source_update(request):
         'network_id' in post_data and
         'source_data_system' in post_data and
         'source_info' in post_data and
-            'docker_port' in post_data):
+        'docker_port' in post_data and
+            (post_data['role'] == "sink" or 'ap_hostname' in post_data)):
         sql_query = "UPDATE sink_sources SET "\
                     "`name` = '{}', `network_id`={}, "\
                     "`source_data_system`='{}', `source_info`='{}',"\
-                    "`update_time`=now(), `description`={}, `docker_port`={} "\
+                    "`update_time`=now(), `description`={}, "\
+            "`docker_port`={}, `ap_hostname`={} "\
                     "WHERE id={}".format(
                         post_data['name'], post_data['network_id'],
                         post_data['source_data_system'], post_data['source_info'],
@@ -113,6 +119,8 @@ def sink_source_update(request):
                             "description", post_data, False),
                         roda.current_val_or_null(
                             "docker_port", post_data, True),
+                        roda.current_val_or_null(
+                            "ap_hostname", post_data, False),
                         post_data['id'])
 
         try:
