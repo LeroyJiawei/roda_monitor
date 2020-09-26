@@ -89,8 +89,7 @@
           .then((response) => {
             if (response.data.status != "OK") {
               alert('Images信息获取失败！');
-              alert(response.data.status);
-              console.log(response.data);
+              console.log(response);
             }
             else this.tableData = response.data.data;
           })
@@ -114,12 +113,12 @@
             }
             else {
               alert('image删除失败!');
-              alert(response.data.status);    
+              console.log(response);    
             }
           })
           .catch((error) => {
-            console.log(error);
             alert('image删除失败，前后端通信错误');
+            console.log(error);
           });
       }
     },
