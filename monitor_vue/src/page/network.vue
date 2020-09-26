@@ -806,7 +806,7 @@
           })
           .catch((error) => {
             console.log(error);
-            alert('bad-table-data');
+            alert('表格数据获取失败，通信错误！');
           });
       },
 
