@@ -522,7 +522,6 @@
         this.modifyNodeData.description = this.tableData[index].description;
         this.modifyNodeData.key = this.tableData[index].key;
 
-
         this.modifyPageVisible = true;
       },
       resetModifyNodeForm(formName) {  //  重置，取消新增节点后清空输入的节点信息
@@ -545,6 +544,7 @@
                     console.log(response);
                     if (response.data.status == "OK") {
                       alert('修改成功！');
+                      this.getTopoAndTableData();// 刷新数据
                       this.modifyPageVisible = false;
                       // 清空新增数据信息
                       this.modifyNodeData = {
@@ -594,6 +594,7 @@
             // console.log(response);
             if (response.data.status == "OK") {
               alert('删除成功！');
+              this.getTopoAndTableData();// 刷新数据
             }
             else {
               alert('删除失败!');
@@ -672,6 +673,7 @@
                   .then((response) => {
                     if (response.data.status == "OK") {
                       alert('增加成功！');
+                      this.getTopoAndTableData();// 刷新数据
                       // 清空新增数据信息
                       this.addNodeData = {
                         name: "",
@@ -689,7 +691,6 @@
                     else {
                       alert('增加失败!');
                       console.log(response);
-                      // console.log(response);
                     }
                   })
                   .catch((error) => {

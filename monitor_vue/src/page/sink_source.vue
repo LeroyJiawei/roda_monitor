@@ -399,6 +399,7 @@
           .then((response) => {
             if (response.data.status == "OK") {
               alert("删除成功！");
+              this.getTopoAndTableData(); // 刷新数据
             } else {
               alert(response.data.status);
               alert("删除失败!");
@@ -489,6 +490,7 @@
                 console.log(response);
                 if (response.data.status == "OK") {
                   alert("修改成功！");
+                  this.getTopoAndTableData(); // 刷新数据
                   this.ModifyPageVisible = false;
                   // 清空新增数据信息
                   this.modifyNodeData = {
@@ -501,6 +503,7 @@
                     description: "", // 可选
                     docker_port: "", // 可选
                   };
+                  this.getTopoAndTableData();// 刷新表格
                 } else {
                   alert("修改失败!");
                   console.log(response);
@@ -593,6 +596,7 @@
               .then((response) => {
                 if (response.data.status == "OK") {
                   alert("增加成功！");
+                  this.getTopoAndTableData(); // 刷新数据
                   // 清空新增数据信息
                   this.addNodeData = {
                     name: "",
