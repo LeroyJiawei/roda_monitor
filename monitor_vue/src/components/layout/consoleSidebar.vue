@@ -32,41 +32,47 @@
 }
 </style>
 <style scoped lang="less">
-  .console-sidebar {
-    position: fixed;
-    top: 50px;
-    bottom: 0px;
-    background-color: #293038;
-    z-index: 102;
+.console-sidebar {
+  position: fixed;
+  top: 50px;
+  bottom: 0px;
+  background-color: #293038;
+  z-index: 102;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: auto;
+  width: 180px;
+  .sidebar-content {
+    width: 200px;
+    height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
-    height: auto;
-    width: 180px;
-    .sidebar-content {
-      width: 200px;
-      height: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      background: #293038;
-      .sidebar-fold {
-        height: 30px;
-        width: 140px;
-        background: #394555;
-        color: #aeb9c2;
-        text-align: left;
-        padding: 0 20px;
-        line-height: 30px !important;
-        user-select: none;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-      }
+    background: #293038;
+    .sidebar-fold {
+      height: 30px;
+      width: 140px;
+      background: #394555;
+      color: #aeb9c2;
+      text-align: left;
+      padding: 0 20px;
+      line-height: 30px !important;
+      user-select: none;
+      cursor: pointer;
+      -webkit-user-select: none;
+      -moz-user-select: none;
     }
   }
+}
 </style>
 <template>
   <div class="console-sidebar">
-    <el-menu :unique-opened='true' :router='true' theme="dark" :default-active="defaultActive" class="sidebar-content">
+    <el-menu
+      :unique-opened="true"
+      :router="true"
+      theme="dark"
+      :default-active="defaultActive"
+      class="sidebar-content"
+    >
       <div class="sidebar-fold">版本1.0.1</div>
       <!-- <el-menu-item index="/quick"><i class="el-icon-message"></i>快速入门</el-menu-item> -->
       <!-- <el-submenu index="user">
@@ -76,15 +82,23 @@
         </template>
         <el-menu-item index="/user"><i class="el-icon-document"></i>用户管理</el-menu-item>
       </el-submenu> -->
-      <el-menu-item index="/sink_source"><i class="el-icon-document"></i>sink_source</el-menu-item>
-      <el-menu-item index="/network"><i class="el-icon-document"></i>network</el-menu-item>
+      <el-menu-item index="/sink_source"
+        ><i class="el-icon-document"></i>系统</el-menu-item
+      >
+      <el-menu-item index="/network"
+        ><i class="el-icon-document"></i>网络</el-menu-item
+      >
       <el-submenu index="base">
         <template slot="title">
           <i class="el-icon-message"></i>
           性能
         </template>
-        <el-menu-item index="/perfomance/e2e"><i class="el-icon-document"></i>端到端</el-menu-item>
-        <el-menu-item index="/thrmenu/filter1"><i class="el-icon-document"></i>匹配</el-menu-item>
+        <el-menu-item index="/perfomance/e2e"
+          ><i class="el-icon-document"></i>端到端</el-menu-item
+        >
+        <el-menu-item index="/thrmenu/filter1"
+          ><i class="el-icon-document"></i>匹配</el-menu-item
+        >
       </el-submenu>
       <!-- <el-submenu index="performance">
         <template slot="title">
@@ -93,24 +107,28 @@
         <el-menu-item index="/perfomance/e2e"><i class="el-icon-document"></i>端到端</el-menu-item>
         <el-menu-item index="/perfomance/match"><i class="el-icon-document"></i>匹配</el-menu-item>
       </el-submenu> -->
-      <el-menu-item index="/hub"><i class="el-icon-document"></i>Hub</el-menu-item>
+      <el-menu-item index="/hub"
+        ><i class="el-icon-document"></i>Hub</el-menu-item
+      >
     </el-menu>
   </div>
 </template>
 <script>
-  import { Menu, Submenu, MenuItem, Icon } from 'element-ui';
-  export default {
-    components: {
-      ElMenu: Menu,
-      ElSubmenu: Submenu,
-      ElMenuItem: MenuItem,
-      Icon: Icon
+import { Menu, Submenu, MenuItem, Icon } from "element-ui";
+export default {
+  components: {
+    ElMenu: Menu,
+    ElSubmenu: Submenu,
+    ElMenuItem: MenuItem,
+    Icon: Icon,
+  },
+  computed: {
+    defaultActive: function () {
+      const that = this;
+      return (
+        (that.$route.meta && that.$route.meta.activePath) || this.$route.path
+      );
     },
-    computed: {
-			defaultActive: function() {
-        const that = this;
-				return that.$route.meta && that.$route.meta.activePath || this.$route.path;
-			}
-		}
-  }
+  },
+};
 </script>

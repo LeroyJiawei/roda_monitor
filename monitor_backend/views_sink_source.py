@@ -13,24 +13,23 @@ def sink_source_registry(request):
 
     # get post body json data
     post_data = json.loads(request.body.decode("UTF-8"))
+    roda.logger.info(post_data)
 
     if ('role' in post_data and
         'name' in post_data and
         'network_id' in post_data and
         'source_data_system' in post_data and
         'source_info' in post_data and
-        'docker_port' in post_data and
             (post_data['role'] == "sink" or 'ap_hostname' in post_data)):
         sql_query = "INSERT INTO sink_sources "\
-            " (`network_id`, `role`, `name`, `source_data_system`, "\
-            " `source_info`,`docker_port`,`description`, `ap_hostname` "\
+            " (`network_id`, `role`, `name`, `source_data_system`,"\
+            " `source_info`,`docker_port`,`description`, `ap_hostname`,"\
             " `create_time`,`update_time`,`state`)"\
             " VALUES"\
-            " ({},'{}','{}','{}','{}',{},{},{},now(),now(),'init');".format(
+            " ({},'{}','{}','{}','{}',{},{},{},now(),now(),'init')".format(
                 post_data['network_id'], post_data['role'], post_data['name'],
                 post_data['source_data_system'], post_data['source_info'],
-                roda.current_val_or_null(
-                    "docker_port", post_data, True),
+                roda.current_val_or_null("docker_port", post_data, True),
                 roda.current_val_or_null("description", post_data, False),
                 roda.current_val_or_null("ap_hostname", post_data, False))
 
