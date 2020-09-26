@@ -2,13 +2,24 @@
   <div class="container">
     <el-card class="box-card">
       <div class="deploy-info">
+        <el-radio-group v-model="filterRadio" @change="radioChange">
+          <el-radio-button
+            v-for="(item, index) in filterList"
+            :key="index"
+            :label="item.name"
+          ></el-radio-button>
+        </el-radio-group>
+      </div>
+
+      <div class="deploy-info">
         <h1>配置信息</h1>
-        <el-table :data="decoderEdgeInfo" border style="width: 100%">
-          <el-table-column prop="vlan_ip" label="vlan ip" width="200">
+        <el-table :data="filterChoose" border style="width: 100%">
+          <el-table-column prop="network_name" label="网络名">
           </el-table-column>
-          <el-table-column prop="name" label="名称"> </el-table-column>
-          <el-table-column prop="addr" label="地址"> </el-table-column>
-          <el-table-column prop="description" label="描述"> </el-table-column>
+          <el-table-column prop="source_data_system" label="源类型">
+          </el-table-column>
+          <el-table-column prop="source_info" label="源配置"> </el-table-column>
+          <el-table-column prop="state" label="状态"> </el-table-column>
         </el-table>
       </div>
     </el-card>
@@ -41,7 +52,11 @@ export default {
   },
   data() {
     return {
-      decoderEdgeInfo: null,
+      filterRadio: null,
+      filterList: [],
+      filterChoose: [],
+
+      intervalId: null,
 
       chart1Option: {
         title: {
@@ -267,16 +282,16 @@ export default {
   },
   created() {
     this.$axios
-      .get(`${window.$config.HOST}/api/network/list`, {
-        params: {
-          role: "decode-edge",
-        },
-      })
+      .get(`${window.$config.HOST}/api/filter/list`)
       .then((response) => {
         if (response.data.status === "OK") {
-          this.decoderEdgeInfo = response.data.data;
+          this.filterList = response.data.data;
+          if (this.filterList.length > 0) {
+            this.filterRadio = this.filterList[0].name;
+            this.filterChoose = [this.filterList[0]];
+          }
         } else {
-          console.log("get decode edge failed");
+          console.log("get list failed");
         }
       });
   },
@@ -285,9 +300,10 @@ export default {
 
     that.intervalId = setInterval(function () {
       that.$axios
-        .get(`${window.$config.HOST}/api/filter/end_perf`, {
+        .get(`${window.$config.HOST}/api/filter/match_perf`, {
           params: {
-            addr: that.decoderEdgeInfo[0].addr,
+            filter_id: that.filterChoose[0].id,
+            addr: that.filterChoose[0].addr,
           },
         })
         .then((response) => {
@@ -333,7 +349,16 @@ export default {
         });
     }, 1000);
   },
-  methods: {},
+  methods: {
+    radioChange(val) {
+      this.filterList.forEach((ele) => {
+        if (ele.name === val) {
+          this.filterChoose = [ele];
+        }
+      });
+      // chart1_data = [];
+    },
+  },
 };
 </script>
 
@@ -348,7 +373,7 @@ h1 {
   margin-bottom: 10px;
 }
 .deploy-info {
-  padding: 0 50px;
+  padding: 20px 50px;
 }
 .box-card {
   width: 100%;
