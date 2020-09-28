@@ -125,9 +125,9 @@ def network_list(req):
     param = get_data.get('role')
     # if role does not exist, get() retuen none
     if(param):
-        sql_query = '''SELECT `id`,`role`,`name`,`vlan_addr`,`vlan_name`,`key`,
-                        `supernode_name`,`create_time`,`update_time`,`state`,
-                        `description`, `service_port`, `addr` FROM network '''
+        sql_query = "SELECT `id`,`role`,`name`,`vlan_addr`,`vlan_name`,`key`, "\
+            "`supernode_name`,`create_time`,`update_time`,`state`, "\
+            "`description`, `service_port`, `addr` FROM network "
         if(param != "all"):
             sql_query += " WHERE role = '{}'".format(param)
 
@@ -178,19 +178,24 @@ def network_update(req):
 
         # TODO: if it is changing the addr and port of supernode,
         # should change all relative edge nodes
-        sql_query = '''UPDATE network SET
-                    `name` = '{}', `role`='{}', addr='{}', 
-                    `vlan_addr`={}, `vlan_name`={}, `key`={},
-                    `supernode_name`={}, `update_time`=now(), 
-                    `description`={}, `service_port`={} WHERE id={}'''.format(
-            post_data['name'], post_data['role'], post_data['addr'],
-            roda.current_val_or_null("vlan_addr", post_data, False),
-            roda.current_val_or_null("vlan_name", post_data, False),
-            roda.current_val_or_null("key", post_data, False),
-            roda.current_val_or_null("supernode_name", post_data, False),
-            roda.current_val_or_null("description", post_data, False),
-            roda.current_val_or_null("service_port", post_data, True),
-            post_data['id'])
+        sql_query = "UPDATE network SET "\
+                    "`name` = '{}', `role`='{}', addr='{}', "\
+                    "`vlan_addr`={}, `vlan_name`={}, `key`={}, "\
+                    "`supernode_name`={}, `update_time`=now(), "\
+                    "`description`={}, `service_port`={} WHERE id={}".format(
+                        post_data['name'], post_data['role'], post_data['addr'],
+                        roda.current_val_or_null(
+                            "vlan_addr", post_data, False),
+                        roda.current_val_or_null(
+                            "vlan_name", post_data, False),
+                        roda.current_val_or_null("key", post_data, False),
+                        roda.current_val_or_null(
+                            "supernode_name", post_data, False),
+                        roda.current_val_or_null(
+                            "description", post_data, False),
+                        roda.current_val_or_null(
+                            "service_port", post_data, True),
+                        post_data['id'])
 
         try:
             roda.mydb_cursor.execute(sql_query)

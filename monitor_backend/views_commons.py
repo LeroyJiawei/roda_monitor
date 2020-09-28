@@ -50,7 +50,8 @@ except Exception as e:
 # :param http_param -- json form data from http request
 # :param is_int -- is current type int form
 def current_val_or_null(key, http_param, is_int):
+    cond = key in http_param and (http_param[key] not in ["", None, "null"])
     if is_int:
-        return "{}".format(http_param[key]) if (key in http_param and http_param[key] != "") else 'null'
+        return "{}".format(http_param[key]) if cond else 'null'
     else:
-        return "'{}'".format(http_param[key]) if (key in http_param and http_param[key] != "") else 'null'
+        return "'{}'".format(http_param[key]) if cond else 'null'

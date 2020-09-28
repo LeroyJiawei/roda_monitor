@@ -22,6 +22,7 @@ def hub_info(req):
     except Exception as e:
         roda.logger.error("Get Hub (vlan) addr query [{}] failed: [{}]".format(
             sql_get_hub_addr, e))
+        roda.logging.exception(e)
         res["status"] = "Get Hub (vlan) addr query failed: [{}]".format(e)
 
     res["data"] = {
@@ -41,15 +42,19 @@ def hub_list_images(req):
             "vlan_addr" if roda.Is_overlay_network else "addr")
     try:
         roda.mydb_cursor.execute(sql_get_hub_addr)
-        hub_addr = roda.mydb_cursor.fetchone()
+        if(roda.mydb_cursor.description):
+            hub_addr = roda.mydb_cursor.fetchone()
     except Exception as e:
         roda.logger.error("Get Hub (vlan) addr query [{}] failed: [{}]".format(
             sql_get_hub_addr, e))
+        roda.logging.exception(e)
         res["status"] = "Get Hub (vlan) addr query failed: [{}]".format(e)
 
     try:
         hub_resp = requests.get(
             "http://{}:{}/v2/_catalog".format(hub_addr[0], hub_addr[1]))
+        roda.logging.info("http://{}:{}/v2/_catalog".format(
+            hub_addr[0], hub_addr[1]))
         repo_list = hub_resp.json()["repositories"]
 
         for repo in repo_list:
@@ -57,10 +62,12 @@ def hub_list_images(req):
                 "http://{}:{}/v2/{}/tags/list".format(hub_addr[0], hub_addr[1], repo))
             tag_list = hub_resp.json()
 
-            res["data"].append({
-                "name": "{}:{}/{}".format(hub_addr[0], hub_addr[1], tag_list["name"]),
-                "tags": tag_list["tags"]
-            })
+            if tag_list["tags"] and len(tag_list["tags"]) > 0:
+                for tag in tag_list["tags"]:
+                    res["data"].append({
+                        "name": "{}:{}/{}".format(hub_addr[0], hub_addr[1], tag_list["name"]),
+                        "tag": tag
+                    })
     except Exception as e:
         errmsg = "Get Hub repository tags failed: {}".format(e)
         roda.logger.error(errmsg)
@@ -73,11 +80,7 @@ def hub_list_images(req):
 def hub_delete_image(req):
     res = {"status": "OK"}
 
-    delete_data = {}
-
-    body_data = req.body.decode("UTF-8")
-    if(body_data != ""):
-        delete_data = json.loads(body_data)
+    delete_data = json.loads(req.body.decode("UTF-8"))
 
     if('name' in delete_data and 'tag' in delete_data):
 
@@ -93,15 +96,20 @@ def hub_delete_image(req):
             res["status"] = "Get Hub (vlan) addr query failed: [{}]".format(e)
 
         try:
+            image_name = delete_data["name"].split('/')[-1]
+            image_tag = delete_data["tag"]
+            roda.logger.info("query {}".format("http://{}:{}/v2/{}/manifests/{}".format(
+                hub_addr[0], hub_addr[1], image_name, image_tag)))
             hub_resp = requests.get(
                 "http://{}:{}/v2/{}/manifests/{}".format(
-                    hub_addr[0], hub_addr[1], delete_data["name"], delete_data["tag"]),
+                    hub_addr[0], hub_addr[1], image_name, image_tag),
                 headers={"Accept": "application/vnd.docker.distribution.manifest.v2+json"})
             image_digest = hub_resp.headers["Docker-Content-Digest"]
-            roda.logger.info(image_digest)
+            roda.logger.info("image_digest of {}:{} is ".format(
+                image_name, image_tag)+image_digest)
             hub_resp = requests.delete(
                 "http://{}:{}/v2/{}/manifests/{}".format(hub_addr[0], hub_addr[1],
-                                                         delete_data["name"], image_digest))
+                                                         image_name, image_digest))
             if(hub_resp.status_code != 202):
                 raise ValueError("Status Code of delete is not 202")
 
@@ -110,18 +118,18 @@ def hub_delete_image(req):
             roda.logger.error(errmsg)
             res["status"] = errmsg
     else:
-        res["status"] = "mis parameter"
+        res["status"] = "miss parameter"
 
     return HttpResponse(json.dumps(res), content_type="application/json")
 
 
-@dj_http.require_GET
+@ dj_http.require_GET
 def hub_list_docker_images(req):
     res = {"status": "OK"}
 
-    sql_get_hub_addr = "SELECT `{}` FROM `network` WHERE"\
-        " `role` = 'hub-edge'".format(
-            "vlan_addr" if roda.Is_overlay_network else "addr")
+    sql_get_hub_addr = "SELECT `{}` FROM `network` WHERE"
+    " `role` = 'hub-edge'".format(
+        "vlan_addr" if roda.Is_overlay_network else "addr")
     try:
         roda.mydb_cursor.execute(sql_get_hub_addr)
         hub_addr = roda.mydb_cursor.fetchone()
@@ -146,7 +154,7 @@ def hub_list_docker_images(req):
 # TODO, should have two ways to build a image:
 #   1. default way and set transfered paramters
 #   2. transfer a dockerfile
-@dj_http.require_POST
+@ dj_http.require_POST
 def hub_build_docker_images(req):
     res = {"status": "OK"}
 

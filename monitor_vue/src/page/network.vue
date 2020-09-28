@@ -276,6 +276,7 @@
         <el-table-column prop="role" label="角色"> </el-table-column>
 
         <el-table-column prop="name" label="名称"> </el-table-column>
+        <el-table-column prop="addr" label="地址"> </el-table-column>
 
         <el-table-column prop="vlan_addr" label="vlan IP"> </el-table-column>
 
@@ -294,8 +295,6 @@
         </el-table-column>
 
         <el-table-column prop="state" label="状态"> </el-table-column>
-
-        <el-table-column prop="addr" label="地址"> </el-table-column>
 
         <el-table-column prop="description" label="描述"> </el-table-column>
 
