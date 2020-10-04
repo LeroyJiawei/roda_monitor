@@ -63,11 +63,12 @@
         </el-form-item>
 
         <el-form-item label="超节点名称" prop="supernode_name">
-          <el-input
-            type="text"
-            v-model="modifyNodeData.supernode_name"
-            auto-complete="off"
-          ></el-input>
+          <el-select filterable clearable class="nodename_add_node" v-model="modifyNodeData.supernode_name" placeholder="请选择超节点">
+            　　　　<el-option v-for="item in tableData"  :label="item.name" :key="item.id" v-bind:value="item.name">
+              <span style="float: left">{{ item.name }}</span> 
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
+            </el-option>
+          </el-select>
         </el-form-item>
 
         <el-form-item label="key">
@@ -182,13 +183,12 @@
         </el-form-item>
 
         <el-form-item label="超节点名称" prop="supernode_name">
-          <el-input
-            type="text"
-            v-model="addNodeData.supernode_name"
-            placeholder="请输入超节点名称"
-            auto-complete="off"
-          >
-          </el-input>
+          <el-select filterable clearable class="nodename_add_node" v-model="addNodeData.supernode_name" placeholder="请选择超节点">
+            　　　　<el-option v-for="item in tableData"  :label="item.name" :key="item.id" v-bind:value="item.name">
+              <span style="float: left">{{ item.name }}</span> 
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
+            </el-option>
+          </el-select>
         </el-form-item>
 
         <el-form-item label="key" prop="key">

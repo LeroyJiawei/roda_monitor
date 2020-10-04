@@ -4,7 +4,7 @@ const E2E = r => require.ensure([], () => r(require('../page/perfomance/e2e')), 
 const Filter = r => require.ensure([], () => r(require('../page/perfomance/filter')), 'filter');
 const network = r => require.ensure([], () => r(require('../page/network')), 'network');
 // const Topo = r => require.ensure([], () => r(require('../page/topo')), 'topo');
-const sink_source = r => require.ensure([], () => r(require('../page/sink_source')), 'sink_source');
+const system = r => require.ensure([], () => r(require('../page/system')), 'system');
 const Hub = r => require.ensure([], () => r(require('../page/hub')), 'hub');
 
 //---------------------
@@ -111,11 +111,11 @@ export default [
         }
       },
       {
-        path: '/sink_source',
-        name: 'sink_source',
-        component: sink_source,
+        path: '/system',
+        name: 'system',
+        component: system,
         meta: {
-          bcrumd: ['sink_source']
+          bcrumd: ['system']
         }
       },
       {

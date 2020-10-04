@@ -82,7 +82,7 @@
         </template>
         <el-menu-item index="/user"><i class="el-icon-document"></i>用户管理</el-menu-item>
       </el-submenu> -->
-      <el-menu-item index="/sink_source"
+      <el-menu-item index="/system"
         ><i class="el-icon-document"></i>系统</el-menu-item
       >
       <el-menu-item index="/network"
