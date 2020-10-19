@@ -4,11 +4,12 @@
       <div class="head">
         <h1 class="title" style="display: inline-block">私有仓库信息</h1>
         <el-tag class="info-tag" type="success" effect="dark">
-          IP:{{ hub_info.addr }}
+          IP地址:{{ hub_info.addr }}
         </el-tag>
         <el-tag class="info-tag" type="warning" effect="dark">
-          PORT:{{ hub_info.port }}
+          端口:{{ hub_info.port }}
         </el-tag>
+        <el-tag type="info"> DOKCER端口:{{ hub_info.docker_port }} </el-tag>
       </div>
     </el-card>
 
@@ -442,6 +443,8 @@ export default {
         data: {
           name: this.tableData[index].name,
           tag: this.tableData[index].tag,
+          hub_addr: this.hub_info.addr,
+          hub_port: this.hub_info.port,
         }, // body参数
       })
         .then((response) => {

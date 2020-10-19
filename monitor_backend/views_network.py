@@ -88,10 +88,10 @@ def network_registry(req):
         sql_query = '''INSERT INTO network
                         (`name`, `role`, `addr`, 
                         `vlan_addr`,`vlan_name`,`key`, `supernode_name`, 
-                        `service_port`, `description`, 
+                        `service_port`,`docker_port`,`description`, 
                         `state`, `create_time`, `update_time`)
                     VALUES
-                    ('{}','{}','{}',{},{},{},{},{},{},
+                    ('{}','{}','{}',{},{},{},{},{},{},{},
                     'init',now(), now())'''.format(
             post_data['name'], post_data['role'], post_data['addr'],
             roda.current_val_or_null("vlan_addr", post_data, False),
@@ -99,6 +99,7 @@ def network_registry(req):
             roda.current_val_or_null("key", post_data, False),
             roda.current_val_or_null("supernode_name", post_data, False),
             roda.current_val_or_null("service_port", post_data, True),
+            roda.current_val_or_null("docker_port", post_data, True),
             roda.current_val_or_null("description", post_data, False))
 
         try:
@@ -127,7 +128,7 @@ def network_list(req):
     if(param):
         sql_query = "SELECT `id`,`role`,`name`,`vlan_addr`,`vlan_name`,`key`, "\
             "`supernode_name`,`create_time`,`update_time`,`state`, "\
-            "`description`, `service_port`, `addr` FROM network "
+            "`description`, `service_port`,`addr`, `docker_port` FROM network "
         if(param != "all"):
             sql_query += " WHERE role = '{}'".format(param)
 
@@ -142,7 +143,8 @@ def network_list(req):
                     "supernode_name": tup[6],
                     "create_time": str(tup[7]),  "update_time": str(tup[8]),
                     "state": tup[9], "description": tup[10],
-                    "service_port": tup[11], "addr": tup[12]
+                    "service_port": tup[11], "addr": tup[12],
+                    "docker_port": tup[13]
                 })
 
         except Exception as e:
@@ -182,7 +184,7 @@ def network_update(req):
                     "`name` = '{}', `role`='{}', addr='{}', "\
                     "`vlan_addr`={}, `vlan_name`={}, `key`={}, "\
                     "`supernode_name`={}, `update_time`=now(), "\
-                    "`description`={}, `service_port`={} WHERE id={}".format(
+                    "`description`={}, `service_port`={}, `docker_port`={} WHERE id={}".format(
                         post_data['name'], post_data['role'], post_data['addr'],
                         roda.current_val_or_null(
                             "vlan_addr", post_data, False),
@@ -195,6 +197,8 @@ def network_update(req):
                             "description", post_data, False),
                         roda.current_val_or_null(
                             "service_port", post_data, True),
+                        roda.current_val_or_null(
+                            "docker_port", post_data, True),
                         post_data['id'])
 
         try:

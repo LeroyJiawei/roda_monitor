@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger("Roda_monito_views")
 
 Is_overlay_network = False
+DomainName = "None"
 
 try:
     cfg = ConfigParser()
@@ -19,6 +20,7 @@ try:
     mysql_user = cfg.get('mysql', 'username')
     mysql_passwd = cfg.get('mysql', 'passwd')
     mysql_db = cfg.get('mysql', 'database')
+    DomainName = cfg.get('roda', 'domain')
 
     mydb_client = mysql.connector.connect(
         host=mysql_host,

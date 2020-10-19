@@ -43,14 +43,14 @@
             filterable
             clearable
             class="netid_modify_node"
-            v-model="modifyNodeData.network_id"
+            v-model.number="modifyNodeData.network_id"
             placeholder="请选择网络"
           >
             <el-option
               v-for="item in network_id_option"
               :label="item.name"
               :key="item.id"
-              :value="item.id.toString()"
+              :value="item.id"
             >
             </el-option>
           </el-select>
@@ -79,10 +79,26 @@
           ></el-input>
         </el-form-item>
 
-        <el-form-item label="ap主机名" prop="ap_hostname">
+        <el-form-item label="域名映射" prop="domain_map">
           <el-input
             type="text"
-            v-model="modifyNodeData.ap_hostname"
+            v-model="modifyNodeData.domain_map"
+            auto-complete="off"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="ap局域网地址" prop="ap_lan_addr">
+          <el-input
+            type="text"
+            v-model="modifyNodeData.ap_lan_addr"
+            auto-complete="off"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="INFLUX端口" prop="influx_port">
+          <el-input
+            type="text"
+            v-model="modifyNodeData.influx_port"
             auto-complete="off"
           ></el-input>
         </el-form-item>
@@ -91,14 +107,6 @@
           <el-input
             type="text"
             v-model="modifyNodeData.description"
-            auto-complete="off"
-          ></el-input>
-        </el-form-item>
-
-        <el-form-item label="docker端口号" prop="docker_port">
-          <el-input
-            type="text"
-            v-model="modifyNodeData.docker_port"
             auto-complete="off"
           ></el-input>
         </el-form-item>
@@ -166,14 +174,14 @@
             filterable
             clearable
             class="netid_add_node"
-            v-model="addNodeData.network_id"
+            v-model.number="addNodeData.network_id"
             placeholder="请选择网络"
           >
             　　　　<el-option
               v-for="item in network_id_option"
               :label="item.name"
               :key="item.id"
-              v-bind:value="item.id.toString()"
+              v-bind:value="item.id"
             >
               <span style="float: left">{{ item.name }}</span>
               <!-- :label指定是选中后框框里显示的内容，v-bind:value是实际绑定的内容！-->
@@ -204,17 +212,37 @@
           <el-input
             type="text"
             v-model="addNodeData.source_info"
-            placeholder="请输入数据源信息(必填)"
+            placeholder="请输入数据源信息(必填,不能有空格)"
             auto-complete="off"
           >
           </el-input>
         </el-form-item>
 
-        <el-form-item label="ap主机名" prop="ap_hostname">
+        <el-form-item label="域名映射" prop="domain_map">
           <el-input
             type="text"
-            v-model="addNodeData.ap_hostname"
+            v-model="addNodeData.domain_map"
+            placeholder="请输入"
+            auto-complete="off"
+          >
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="ap局域网地址" prop="ap_lan_addr">
+          <el-input
+            type="text"
+            v-model="addNodeData.ap_lan_addr"
             placeholder='请输入ap主机名(role为"source"时必填)'
+            auto-complete="off"
+          >
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="ap局域网地址" prop="influx_port">
+          <el-input
+            type="text"
+            v-model="addNodeData.influx_port"
+            placeholder="请输入influxdb端口"
             auto-complete="off"
           >
           </el-input>
@@ -225,16 +253,6 @@
             type="text"
             v-model="addNodeData.description"
             placeholder="请输入描述(可选)"
-            auto-complete="off"
-          >
-          </el-input>
-        </el-form-item>
-
-        <el-form-item label="docker端口" prop="docker_port">
-          <el-input
-            type="text"
-            v-model="addNodeData.docker_port"
-            placeholder="请输入docker端口(可选)"
             auto-complete="off"
           >
           </el-input>
@@ -295,24 +313,27 @@
         <el-table-column prop="network_name" label="网络名称">
         </el-table-column>
 
-        <el-table-column prop="create_time" label="创建时间"> </el-table-column>
-
-        <el-table-column prop="update_time" label="更新时间"> </el-table-column>
-
-        <el-table-column prop="state" label="状态"> </el-table-column>
-
         <el-table-column prop="source_data_system" label="数据源系统">
         </el-table-column>
 
         <el-table-column prop="source_info" label="数据源信息">
         </el-table-column>
 
-        <el-table-column prop="description" label="描述"> </el-table-column>
+        <el-table-column prop="domain_map" label="域名映射"> </el-table-column>
 
-        <el-table-column prop="docker_port" label="docker端口">
+        <el-table-column prop="ap_lan_addr" label="ap局域网地址">
         </el-table-column>
 
-        <el-table-column prop="ap_hostname" label="ap主机名"> </el-table-column>
+        <el-table-column prop="influx_port" label="INFLUX端口">
+        </el-table-column>
+
+        <el-table-column prop="description" label="描述"> </el-table-column>
+
+        <el-table-column prop="create_time" label="创建时间"> </el-table-column>
+
+        <el-table-column prop="update_time" label="更新时间"> </el-table-column>
+
+        <el-table-column prop="state" label="状态"> </el-table-column>
 
         <el-table-column label="操作" fixed="right">
           <template slot-scope="scope">
@@ -363,27 +384,8 @@ export default {
     return {
       AddNodePageVisible: false, // 是否显示新增节点框
       ModifyPageVisible: false,
-      addNodeData: {
-        name: "",
-        role: "",
-        network_id: "",
-        source_info: "",
-        source_data_system: "",
-        ap_hostname: "", //可选，role为"source"时必需
-        description: "", // 可选
-        docker_port: "", // 可选
-      },
-      modifyNodeData: {
-        id: "",
-        name: "",
-        role: "",
-        network_id: "",
-        source_info: "",
-        source_data_system: "",
-        ap_hostname: "", //可选，role为"source"时必需
-        description: "", // 可选
-        docker_port: "", // 可选
-      },
+      addNodeData: {},
+      modifyNodeData: {},
 
       rulesOfNode: {
         id: [
@@ -399,8 +401,8 @@ export default {
           { min: 1, message: "不能为空", trigger: "blur" },
         ],
         network_id: [
-          { required: true, trigger: "blur" },
-          { min: 1, message: "不能为空", trigger: "blur" },
+          { required: true, message: "不能为空" },
+          { type: "number", message: "请选择" },
         ],
         source_info: [
           { required: true, trigger: "blur" },
@@ -510,34 +512,7 @@ export default {
     },
 
     handleModifyClose(done) {
-      // this.$confirm("确认放弃修改？")
-      //   .then((_) => {
-      //     // 清空新增数据信息
-      //     this.modifyNodeData = {
-      //       id: "",
-      //       name: "",
-      //       role:"",
-      //       network_id: "",
-      //       source_info: "",
-      //       source_data_system: "",
-      //       ap_hostname: "",
-      //       description: "", // 可选
-      //       docker_port: "", // 可选
-      //     };
-      //     done();
-      //   })
-      //   .catch((_) => { });
-      this.modifyNodeData = {
-        id: "",
-        name: "",
-        role: "",
-        network_id: "",
-        source_info: "",
-        source_data_system: "",
-        ap_hostname: "",
-        description: "", // 可选
-        docker_port: "", // 可选
-      };
+      this.modifyNodeData = {};
       this.ModifyPageVisible = false;
     },
 
@@ -547,15 +522,15 @@ export default {
       this.modifyNodeData.id = this.tableData[index].id.toString();
       this.modifyNodeData.name = this.tableData[index].name;
       this.modifyNodeData.role = this.tableData[index].role;
-      // this.modifyNodeData.network_id = this.tableData[index].network_id.toString();
-      this.modifyNodeData.network_id = this.tableData[index].network_name;
+      this.modifyNodeData.network_id = this.tableData[index].network_id;
       this.modifyNodeData.source_info = this.tableData[index].source_info;
       this.modifyNodeData.source_data_system = this.tableData[
         index
       ].source_data_system;
       this.modifyNodeData.description = this.tableData[index].description;
-      this.modifyNodeData.docker_port = this.tableData[index].docker_port;
-      this.modifyNodeData.ap_hostname = this.tableData[index].ap_hostname;
+      this.modifyNodeData.ap_lan_addr = this.tableData[index].ap_lan_addr;
+      this.modifyNodeData.domain_map = this.tableData[index].domain_map;
+      this.modifyNodeData.influx_port = this.tableData[index].influx_port;
       this.ModifyPageVisible = true;
 
       this.$axios
@@ -582,7 +557,6 @@ export default {
     submitModification(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          // console.log(this.modifyNodeData.network_id);
           this.$axios({
             url: `${window.$config.HOST}/api/sink_source/update`,
             method: "post",
@@ -591,20 +565,10 @@ export default {
             .then((response) => {
               console.log(response);
               if (response.data.status == "OK") {
-                alert("修改成功！");
-                this.getTopoAndTableData(); // 刷新数据
+                this.$message({ message: "修改成功！" });
                 this.ModifyPageVisible = false;
                 // 清空新增数据信息
-                this.modifyNodeData = {
-                  id: "",
-                  name: "",
-                  network_id: "",
-                  source_info: "",
-                  source_data_system: "",
-                  ap_hostname: "",
-                  description: "", // 可选
-                  docker_port: "", // 可选
-                };
+                this.modifyNodeData = {};
                 this.getTopoAndTableData(); // 刷新表格
               } else {
                 alert("修改失败!");
@@ -629,32 +593,7 @@ export default {
     },
 
     handleAddClose(done) {
-      // this.$confirm("确认放弃新增节点？")
-      //   .then((_) => {
-      //     // 清空新增数据信息
-      //     this.addNodeData = {
-      //       name: "",
-      //       role: "",
-      //       network_id: "",
-      //       source_info: "",
-      //       source_data_system: "",
-      //       ap_hostname: "",
-      //       description: "", // 可选
-      //       docker_port: "", // 可选
-      //     };
-      //     done();
-      //   })
-      //   .catch((_) => { });
-      this.addNodeData = {
-        name: "",
-        role: "",
-        network_id: "",
-        source_info: "",
-        source_data_system: "",
-        ap_hostname: "",
-        description: "", // 可选
-        docker_port: "", // 可选
-      };
+      this.addNodeData = {};
       this.AddNodePageVisible = false;
     },
 
@@ -681,7 +620,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           if (
-            this.addNodeData.ap_hostname == "" &&
+            this.addNodeData.ap_lan_addr == "" &&
             this.addNodeData.role == "source"
           ) {
             alert("当前role为‘source’,ap主机名是必填项！");
@@ -703,16 +642,7 @@ export default {
                 alert("增加成功！");
                 this.getTopoAndTableData(); // 刷新数据
                 // 清空新增数据信息
-                this.addNodeData = {
-                  name: "",
-                  role: "",
-                  network_id: "",
-                  source_info: "",
-                  source_data_system: "",
-                  ap_hostname: "",
-                  description: "", // 可选
-                  docker_port: "", // 可选
-                };
+                this.addNodeData = {};
                 this.AddNodePageVisible = false; // 增加成功时才退了这个对话框
               } else {
                 alert("增加失败!");

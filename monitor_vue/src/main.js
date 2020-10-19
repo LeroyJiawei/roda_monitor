@@ -55,7 +55,7 @@ Vue.use(ElementUI);
 
 window.$config = {};
 // window.$config.HOST = 'https://easy-mock.com/mock/5f6736c27304034f4b7541d4'
-window.$config.HOST = 'http://192.168.137.1:80';
+window.$config.HOST = 'http://192.168.0.107';
 // window.$config.HOST = ''; // production
 
 // import { Message, loading } from 'element-ui';

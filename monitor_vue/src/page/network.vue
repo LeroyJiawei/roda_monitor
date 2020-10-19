@@ -38,7 +38,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="地址" prop="addr">
+        <el-form-item label="IP地址" prop="addr">
           <el-input
             type="text"
             v-model="modifyNodeData.addr"
@@ -96,6 +96,14 @@
           <el-input
             type="text"
             v-model="modifyNodeData.service_port"
+            auto-complete="off"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="docker端口">
+          <el-input
+            type="text"
+            v-model="modifyNodeData.docker_port"
             auto-complete="off"
           ></el-input>
         </el-form-item>
@@ -235,6 +243,15 @@
           ></el-input>
         </el-form-item>
 
+        <el-form-item label="docker端口" prop="docker_port">
+          <el-input
+            type="text"
+            v-model="addNodeData.docker_port"
+            placeholder="(可选)"
+            auto-complete="off"
+          ></el-input>
+        </el-form-item>
+
         <el-form-item label="描述" prop="description">
           <el-input
             type="text"
@@ -302,29 +319,33 @@
         <el-table-column prop="role" label="角色"> </el-table-column>
 
         <el-table-column prop="name" label="名称"> </el-table-column>
-        <el-table-column prop="addr" label="地址"> </el-table-column>
 
-        <el-table-column prop="vlan_addr" label="vlan IP"> </el-table-column>
-
-        <el-table-column prop="vlan_name" label="vlan 名称"> </el-table-column>
+        <el-table-column prop="addr" label="IP地址"> </el-table-column>
 
         <el-table-column prop="service_port" label="服务端口">
         </el-table-column>
 
-        <el-table-column prop="supernode_name" label="超节点名称">
-        </el-table-column>
-
-        <el-table-column prop="create_time" label="创建时间" sortable>
-        </el-table-column>
-
-        <el-table-column prop="update_time" label="更新时间" sortable>
+        <el-table-column prop="docker_port" label="docker端口">
         </el-table-column>
 
         <el-table-column prop="state" label="状态"> </el-table-column>
 
         <el-table-column prop="description" label="描述"> </el-table-column>
 
+        <el-table-column prop="vlan_addr" label="vlan IP"> </el-table-column>
+
+        <el-table-column prop="vlan_name" label="vlan 名称"> </el-table-column>
+
+        <el-table-column prop="supernode_name" label="超节点名称">
+        </el-table-column>
+
         <el-table-column prop="key" label="key"> </el-table-column>
+
+        <el-table-column prop="create_time" label="创建时间" sortable>
+        </el-table-column>
+
+        <el-table-column prop="update_time" label="更新时间" sortable>
+        </el-table-column>
 
         <el-table-column label="操作" fixed="right">
           <template slot-scope="scope">
@@ -453,31 +474,8 @@ export default {
       },
       AddNodeFormVisible: false, // 是否显示新增节点框
       modifyPageVisible: false,
-      addNodeData: {
-        name: "",
-        role: "",
-        addr: "",
-        // 以下可选
-        vlan_addr: "", //  当is_overlay(来自/api/network/is_overlay接口)时则必需
-        vlan_name: "", //  当is_overlay(来自/api/network/is_overlay接口)时则必需
-        supernode_name: "", //当is_overlay(来自/api/network/is_overlay接口)时则必需
-        key: "", //  当is_overlay(来自/api/network/is_overlay接口)时则必需
-        service_port: "",
-        description: "",
-      },
-      modifyNodeData: {
-        id: "",
-        name: "",
-        role: "",
-        addr: "",
-        // 以下可选
-        vlan_addr: "", //当is_overlay(来自/api/network/is_overlay接口)时则必需
-        vlan_name: "", //当is_overlay(来自/api/network/is_overlay接口)时则必需
-        supernode_name: "", //当is_overlay(来自/api/network/is_overlay接口)时则必需
-        key: "", //当is_overlay(来自/api/network/is_overlay接口)时则必需
-        service_port: "",
-        description: "",
-      },
+      addNodeData: {},
+      modifyNodeData: {},
       tableHeadText: "请选择表格类型：",
       edge_enum_choose: "supernode", //  表格类型选择值记录
       edge_enum: [
@@ -653,19 +651,7 @@ export default {
       //     done();
       //   })
       //   .catch(_ => { });
-      this.modifyNodeData = {
-        id: "",
-        name: "",
-        role: "",
-        addr: "",
-        vlan_addr: "",
-        vlan_name: "",
-        supernode_name: "",
-        service_port: "", // 以下可选
-        key: "",
-        description: "",
-        addr: "",
-      };
+      this.modifyNodeData = {};
       this.modifyPageVisible = false;
     },
     modifyARow(index) {
@@ -679,6 +665,7 @@ export default {
       this.modifyNodeData.vlan_name = this.tableData[index].vlan_name;
       this.modifyNodeData.supernode_name = this.tableData[index].supernode_name;
       this.modifyNodeData.service_port = this.tableData[index].service_port;
+      this.modifyNodeData.docker_port = this.tableData[index].docker_port;
       this.modifyNodeData.addr = this.tableData[index].addr;
       this.modifyNodeData.description = this.tableData[index].description;
       this.modifyNodeData.key = this.tableData[index].key;
@@ -709,18 +696,7 @@ export default {
                     this.getTopoAndTableData(); // 刷新数据
                     this.modifyPageVisible = false;
                     // 清空新增数据信息
-                    this.modifyNodeData = {
-                      id: "",
-                      name: "",
-                      role: "",
-                      vlan_addr: "",
-                      vlan_name: "",
-                      supernode_name: "",
-                      service_port: "", // 以下可选
-                      key: "",
-                      description: "",
-                      addr: "",
-                    };
+                    this.modifyNodeData = {};
                   } else {
                     alert("修改失败!");
                     console.log(response);
@@ -770,35 +746,7 @@ export default {
       this.$refs[formName].resetFields();
     },
     handleAddClose(done) {
-      // this.$confirm('确认放弃新增节点？')
-      // .then(_ => {
-      //   // 清空新增数据信息
-      //   this.addNodeData = {
-      //     name: "",
-      //     role: "",
-      //     vlan_addr: "",
-      //     vlan_name: "",
-      //     supernode_name: "",
-      //     service_port: "", // 以下可选
-      //     key: "",
-      //     description: "",
-      //     addr: ""
-      //   };
-      //   done();
-      // })
-      // .catch(_ => { });
-      this.addNodeData = {
-        name: "",
-        role: "",
-        addr: "",
-        // 以下可选
-        vlan_addr: "", //  当is_overlay(来自/api/network/is_overlay接口)时则必需
-        vlan_name: "", //  当is_overlay(来自/api/network/is_overlay接口)时则必需
-        supernode_name: "", //当is_overlay(来自/api/network/is_overlay接口)时则必需
-        key: "", //  当is_overlay(来自/api/network/is_overlay接口)时则必需
-        service_port: "",
-        description: "",
-      };
+      this.addNodeData = {};
       this.AddNodeFormVisible = false;
     },
     async submitNodeInfo(formName) {
@@ -816,37 +764,14 @@ export default {
                 url: `${window.$config.HOST}/api/network/registry`,
                 method: "post",
                 data: this.addNodeData,
-                // data: {
-                //   name: this.addNodeData.name,
-                //   role: this.addNodeData.role,
-                //   vlan_addr: this.addNodeData.vlan_addr,
-                //   vlan_name: this.addNodeData.vlan_name,
-                //   supernode_name: this.addNodeData.supernode_name,
-                //   service_port: this.addNodeData.service_port, // 以下可选
-                //   key: this.addNodeData.key,
-                //   description: this.addNodeData.description,
-                //   addr: this.addNodeData.addr
-                // } // body参数
               })
-                // .post(`${window.$config.HOST}/api/network/register`,
-                //   {data:this.addNodeData}
-                // )
+
                 .then((response) => {
                   if (response.data.status == "OK") {
                     alert("增加成功！");
                     this.getTopoAndTableData(); // 刷新数据
                     // 清空新增数据信息
-                    this.addNodeData = {
-                      name: "",
-                      role: "",
-                      vlan_addr: "",
-                      vlan_name: "",
-                      supernode_name: "",
-                      service_port: "", // 以下可选
-                      key: "",
-                      description: "",
-                      addr: "",
-                    };
+                    this.addNodeData = {};
                     this.AddNodeFormVisible = false; // 增加成功时才退了这个对话框
                   } else {
                     alert("增加失败!");

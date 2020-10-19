@@ -417,54 +417,99 @@ export default {
     const that = this;
 
     that.intervalId = setInterval(function () {
-      that.$axios
-        .get(`${window.$config.HOST}/api/filter/match_perf`, {
-          params: {
-            filter_id: that.filterChoose[0].id,
-            addr: that.filterChoose[0].addr,
-          },
-        })
-        .then((response) => {
-          var getData = response.data.data;
-          if (chart1_data.length == 60) {
-            chart1_data.shift();
-            chart2_data.shift();
-            chart3_data.shift();
-            chart4_data.shift();
-          }
-          var cur_date = new Date();
-          var date_val =
-            [
-              cur_date.getFullYear(),
-              cur_date.getMonth(),
-              cur_date.getDate(),
-            ].join("/") +
-            " " +
-            [
-              cur_date.getHours(),
-              cur_date.getMinutes(),
-              cur_date.getSeconds(),
-            ].join(":");
-          chart1_data.push({
-            name: cur_date.toString(),
-            value: [date_val, getData.average],
+      if (
+        that.filterChoose.length >= 1 &&
+        that.filterChoose[0].filter_exist == "Yes"
+      ) {
+        that.$axios
+          .get(`${window.$config.HOST}/api/filter/match_perf`, {
+            params: {
+              filter_id: that.filterChoose[0].id,
+              addr: that.filterChoose[0].addr,
+              influx_port: that.filterChoose[0].influx_port,
+            },
+          })
+          .then((response) => {
+            if (response.data.status == "OK") {
+              var getData = response.data.data;
+              if (chart1_data.length == 20) {
+                chart1_data.shift();
+                chart2_data.shift();
+                chart3_data.shift();
+                chart4_data.shift();
+              }
+              var cur_date = new Date();
+              var date_val =
+                [
+                  cur_date.getFullYear(),
+                  cur_date.getMonth(),
+                  cur_date.getDate(),
+                ].join("/") +
+                " " +
+                [
+                  cur_date.getHours(),
+                  cur_date.getMinutes(),
+                  cur_date.getSeconds(),
+                ].join(":");
+              chart1_data.push({
+                name: cur_date.toString(),
+                value: [date_val, getData.average],
+              });
+              chart2_data.push({
+                name: cur_date.toString(),
+                value: [date_val, getData.maximum],
+              });
+              chart3_data.push({
+                name: cur_date.toString(),
+                value: [date_val, getData.minimum],
+              });
+              chart4_data.push({
+                name: cur_date.toString(),
+                value: [date_val, getData.variance],
+              });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
           });
-          chart2_data.push({
-            name: cur_date.toString(),
-            value: [date_val, getData.maximum],
-          });
-          chart3_data.push({
-            name: cur_date.toString(),
-            value: [date_val, getData.minimum],
-          });
-          chart4_data.push({
-            name: cur_date.toString(),
-            value: [date_val, getData.variance],
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      }
+      // else {
+      //   if (chart1_data.length == 20) {
+      //     chart1_data.shift();
+      //     chart2_data.shift();
+      //     chart3_data.shift();
+      //     chart4_data.shift();
+      //   }
+      //   var cur_date = new Date();
+      //   var date_val =
+      //     [
+      //       cur_date.getFullYear(),
+      //       cur_date.getMonth(),
+      //       cur_date.getDate(),
+      //     ].join("/") +
+      //     " " +
+      //     [
+      //       cur_date.getHours(),
+      //       cur_date.getMinutes(),
+      //       cur_date.getSeconds(),
+      //     ].join(":");
+      //   chart1_data.push({
+      //     name: cur_date.toString(),
+      //     value: [date_val, 0],
+      //   });
+      //   chart2_data.push({
+      //     name: cur_date.toString(),
+      //     value: [date_val, 0],
+      //   });
+      //   chart3_data.push({
+      //     name: cur_date.toString(),
+      //     value: [date_val, 0],
+      //   });
+      //   chart4_data.push({
+      //     name: cur_date.toString(),
+      //     value: [date_val, 0],
+      //   });
+      // }
     }, 1000);
   },
   methods: {
@@ -496,6 +541,8 @@ export default {
       this.filterDialData.id = this.filterList[index].id;
       this.filterDialData.network_id = this.filterList[index].network_id;
       this.filterDialData.name = this.filterList[index].name;
+
+      this.filterDialData.influx_port = this.filterList[index].influx_port;
 
       this.filterDialData.baserate = this.filterList[index].filter_base_rate;
       this.filterDialData.expMatchTime = this.filterList[
@@ -554,6 +601,7 @@ export default {
               match_threshold: this.filterDialData.expMatchTime,
               base_rate: this.filterDialData.baserate,
               max_thread: this.filterDialData.maxThreads,
+              influx_port: this.filterDialData.influx_port,
             })
             .then((response) => {
               if (response.data.status == "OK") {

@@ -18,13 +18,14 @@ def filter_list(req):
     sql_list_filter = "SELECT `sink_sources`.`id`, `sink_sources`.`name`,"\
         "`sink_sources`.`source_data_system`, `sink_sources`.`source_info`,"\
         "`network`.`id` as `network_id`, `network`.`name` as `network_name`,"\
-        "`network`.`vlan_addr` as `vlan_addr`, `sink_sources`.`docker_port`,"\
+        "`network`.`vlan_addr` as `vlan_addr`, `network`.`docker_port`,"\
         "`sink_sources`.`state`,`network`.`addr` as `addr`,"\
         "`sink_sources`.`filter_base_rate`,"\
         "`sink_sources`.`filter_exp_match`,"\
         "`sink_sources`.`filter_win_size`,"\
         "`sink_sources`.`filter_max_thread`,"\
-        "`sink_sources`.`filter_exist` "\
+        "`sink_sources`.`filter_exist`,"\
+        "`sink_sources`.`influx_port` "\
         " FROM `sink_sources` JOIN `network` ON `sink_sources`.`network_id`=`network`.`id`"\
         " WHERE `sink_sources`.`role` = 'source' "
     try:
@@ -46,6 +47,7 @@ def filter_list(req):
                 "filter_win_size": fil[12],
                 "filter_max_thread": fil[13],
                 "filter_exist": "Yes" if fil[14] else "No",
+                "influx_port": fil[15]
             })
     except Exception as e:
         roda.logger.error("List filters query [{}] failed: [{}]".format(
@@ -123,10 +125,11 @@ def filter_get_match_perf(req):
 
     filter_id = req.GET.get("filter_id")
     filter_addr = req.GET.get("addr")
+    filter_influx_port = req.GET.get("influx_port")
 
-    if(filter_id and filter_addr):
+    if(filter_id and filter_addr and filter_influx_port):
         influx_client = InfluxDBClient(
-            filter_addr, "8086", "lab126", "lab126", "roda")
+            filter_addr, filter_influx_port, "lab126", "lab126", "roda")
         cur_ts = int(time.time() * 10e8)
 
         query_cmd = "SELECT MEAN(EventMatchTime),MAX(EventMatchTime),Min(EventMatchTime) "\
@@ -181,7 +184,7 @@ def filter_get_e2e_perf(req):
 
     if(filter_addr):
         influx_client = InfluxDBClient(
-            filter_addr, "8086", "lab126", "lab126", "roda")
+            filter_addr, 8012, "lab126", "lab126", "roda")
         cur_ts = int(time.time() * 10e8)
 
         query_cmd = "SELECT MEAN(EventDelay),MAX(EventDelay),Min(EventDelay) "\
@@ -239,6 +242,7 @@ def filter_update_config(req):
        "win_size" in post_param and
        "match_threshold" in post_param and
        "base_rate" in post_param and
+       "influx_port" in post_param and
        "max_thread" in post_param):
 
         sql_query = "SELECT `{}` FROM `network` WHERE `id`={}".format(
@@ -255,7 +259,7 @@ def filter_update_config(req):
 
         try:
             influx_client = InfluxDBClient(
-                influx_addr, 8086, "lab126", "lab126", "roda")
+                influx_addr, post_param["influx_port"], "lab126", "lab126", "roda")
 
             influx_client.drop_measurement("dynamicParams")
             influx_client.write_points([{
@@ -306,7 +310,7 @@ def filter_delete(req):
 
     if("id" in delete_param):
         sql_query = "SELECT `network`.`{}` as `addr`, "\
-            "`sink_sources`.`filter_exist`,`sink_sources`.`docker_port` "\
+            "`sink_sources`.`filter_exist`,`network`.`docker_port` "\
             "FROM `sink_sources` "\
             "JOIN `network` ON `sink_sources`.`network_id`=`network`.`id` "\
             "WHERE `sink_sources`.`id`={}".format(
@@ -335,6 +339,7 @@ def filter_delete(req):
                 container_id="filter")
             container_info.stop()
             container_info.remove()
+
         except Exception as e:
             errmsg = "stop filter failed: {}".format(e)
             res["status"] = errmsg
