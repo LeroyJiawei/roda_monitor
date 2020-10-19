@@ -108,7 +108,7 @@
         <el-menu-item index="/perfomance/match"><i class="el-icon-document"></i>匹配</el-menu-item>
       </el-submenu> -->
       <el-menu-item index="/hub"
-        ><i class="el-icon-document"></i>Hub</el-menu-item
+        ><i class="el-icon-document"></i>镜像仓库</el-menu-item
       >
     </el-menu>
   </div>

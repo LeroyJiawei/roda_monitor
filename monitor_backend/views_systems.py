@@ -184,7 +184,10 @@ def sink_source_topo(request):
         if(system[-1] == 'source'):  # role field
             sources.append({
                 "name": system[0],
-                "id": system[1]
+                "id": system[1],
+                "itemStyle": {
+                    "color": "green"
+                }
             })
         else:
             sinks.append({

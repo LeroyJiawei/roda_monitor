@@ -15,7 +15,7 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path, re_path
-from monitor_backend import views, views_network, views_sink_source, views_hub, views_filter
+from monitor_backend import views, views_network, views_systems, views_hub, views_filter
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -29,28 +29,31 @@ urlpatterns = [
     path('api/network/topo', views_network.network_topo),
 
     # sink and source
-    path('api/sink_source/registry', views_sink_source.sink_source_registry),
-    path('api/sink_source/update', views_sink_source.sink_source_update),
-    path('api/sink_source/delete', views_sink_source.sink_source_delete),
-    path('api/sink_source/list', views_sink_source.sink_source_list),
-    path('api/sink_source/topo', views_sink_source.sink_source_topo),
+    path('api/sink_source/registry', views_systems.sink_source_registry),
+    path('api/sink_source/update', views_systems.sink_source_update),
+    path('api/sink_source/delete', views_systems.sink_source_delete),
+    path('api/sink_source/list', views_systems.sink_source_list),
+    path('api/sink_source/topo', views_systems.sink_source_topo),
 
     # hub
     path('api/hub/info', views_hub.hub_info),
     path('api/hub/list_images', views_hub.hub_list_images),
     path('api/hub/delete_image', views_hub.hub_delete_image),
     path('api/hub/list_docker_images', views_hub.hub_list_docker_images),
-    path('api/hub/build_docker_images', views_hub.hub_build_docker_images),
+    path('api/hub/run_image', views_hub.hub_run_image),
+    path('api/hub/upload_file', views_hub.hub_upload_file),
+    path('api/hub/list_file', views_hub.hub_list_file),
+    path('api/hub/delete_file', views_hub.hub_delete_file),
+    path('api/hub/upload_dockerfile', views_hub.hub_upload_dockerfile),
 
     # filter
     path('api/filter/list', views_filter.filter_list),
     path('api/filter/pull', views_filter.filter_pull_image),
     path('api/filter/source_images', views_filter.filter_source_images),
-    path('api/filter/create_container', views_filter.filter_create_container),
     path('api/filter/match_perf', views_filter.filter_get_match_perf),
     path('api/filter/end_perf', views_filter.filter_get_e2e_perf),
-
-
+    path('api/filter/update_config', views_filter.filter_update_config),
+    path('api/filter/delete', views_filter.filter_delete),
 
     re_path(r'^.*$', views.index_fun)
 ]

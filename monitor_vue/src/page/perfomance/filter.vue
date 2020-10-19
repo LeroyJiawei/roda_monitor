@@ -19,7 +19,43 @@
           <el-table-column prop="source_data_system" label="源类型">
           </el-table-column>
           <el-table-column prop="source_info" label="源配置"> </el-table-column>
+          <el-table-column prop="filter_exist" label="是否部署">
+          </el-table-column>
+          <el-table-column prop="filter_base_rate" label="baserate">
+          </el-table-column>
+          <el-table-column prop="filter_win_size" label="窗口大小">
+          </el-table-column>
+          <el-table-column prop="filter_exp_match" label="匹配阈值">
+          </el-table-column>
+          <el-table-column prop="filter_max_thread" label="最大线程数">
+          </el-table-column>
           <el-table-column prop="state" label="状态"> </el-table-column>
+
+          <el-table-column label="操作" fixed="right">
+            <template slot-scope="scope">
+              <span>
+                <el-button
+                  style="display: block; margin: 0 auto; height: 35px"
+                  @click="filterDialClick(scope.$index)"
+                  type="text"
+                  size="small"
+                >
+                  修改filter配置
+                </el-button>
+              </span>
+
+              <!-- <span>
+                <el-button
+                  style="display: block; margin: 0 auto; height: 35px"
+                  @click="deleteRow(scope.$index)"
+                  type="danger"
+                  size="small"
+                >
+                  删除
+                </el-button>
+              </span> -->
+            </template>
+          </el-table-column>
         </el-table>
       </div>
     </el-card>
@@ -34,6 +70,78 @@
         <v-chart class="item" ref="chart4" :options="chart4Option" />
       </div>
     </el-card>
+
+    <el-dialog
+      title="filter配置"
+      :visible.sync="FilterPageVisible"
+      width="50%"
+      :before-close="handleFilterDialClose"
+      :modal-append-to-body="false"
+    >
+      <el-form
+        :model="filterDialData"
+        status-icon
+        ref="filterDialData"
+        label-width="130px"
+        :rules="rulesOfConfigNode"
+      >
+        <el-form-item label="名称" prop="name">
+          <el-input
+            type="text"
+            v-model="filterDialData.name"
+            :disabled="true"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="baserate" prop="baserate">
+          <el-input
+            type="text"
+            v-model.number="filterDialData.baserate"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="窗口大小" prop="winSize">
+          <el-input
+            type="text"
+            v-model.number="filterDialData.winSize"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="匹配阈值" prop="expMatchTime">
+          <el-input
+            type="text"
+            v-model.number="filterDialData.expMatchTime"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="最大线程数" prop="maxThreads">
+          <el-input
+            type="text"
+            v-model.number="filterDialData.maxThreads"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button
+          @click="
+            FilterPageVisible = false;
+            resetNodeForm('filterDialData');
+          "
+          >取 消</el-button
+        >
+
+        <el-button type="danger" @click="deleteFilter('filterDialData')">
+          删除filter
+        </el-button>
+
+        <el-button
+          type="primary"
+          @click="submitFilterModification('filterDialData')"
+          >提交修改</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -52,9 +160,31 @@ export default {
   },
   data() {
     return {
+      FilterPageVisible: false,
+      filterDialData: {},
+
       filterRadio: null,
       filterList: [],
       filterChoose: [],
+
+      rulesOfConfigNode: {
+        baserate: [
+          { required: true, message: "不能为空" },
+          { type: "float", message: "范围：0～1" },
+        ],
+        winSize: [
+          { required: true, message: "不能为空" },
+          { type: "number", message: "必须为数字值" },
+        ],
+        expMatchTime: [
+          { required: true, message: "不能为空" },
+          { type: "number", message: "必须为数字值" },
+        ],
+        maxThreads: [
+          { required: true, message: "不能为空" },
+          { type: "number", message: "必须为数字值" },
+        ],
+      },
 
       intervalId: null,
 
@@ -281,19 +411,7 @@ export default {
     };
   },
   created() {
-    this.$axios
-      .get(`${window.$config.HOST}/api/filter/list`)
-      .then((response) => {
-        if (response.data.status === "OK") {
-          this.filterList = response.data.data;
-          if (this.filterList.length > 0) {
-            this.filterRadio = this.filterList[0].name;
-            this.filterChoose = [this.filterList[0]];
-          }
-        } else {
-          console.log("get list failed");
-        }
-      });
+    this.loadFilterInfo();
   },
   mounted() {
     const that = this;
@@ -350,6 +468,21 @@ export default {
     }, 1000);
   },
   methods: {
+    loadFilterInfo() {
+      this.$axios
+        .get(`${window.$config.HOST}/api/filter/list`)
+        .then((response) => {
+          if (response.data.status === "OK") {
+            this.filterList = response.data.data;
+            if (this.filterList.length > 0) {
+              this.filterRadio = this.filterList[0].name;
+              this.filterChoose = [this.filterList[0]];
+            }
+          } else {
+            console.log("get list failed");
+          }
+        });
+    },
     radioChange(val) {
       this.filterList.forEach((ele) => {
         if (ele.name === val) {
@@ -357,6 +490,94 @@ export default {
         }
       });
       // chart1_data = [];
+    },
+
+    filterDialClick(index) {
+      this.filterDialData.id = this.filterList[index].id;
+      this.filterDialData.network_id = this.filterList[index].network_id;
+      this.filterDialData.name = this.filterList[index].name;
+
+      this.filterDialData.baserate = this.filterList[index].filter_base_rate;
+      this.filterDialData.expMatchTime = this.filterList[
+        index
+      ].filter_exp_match;
+      this.filterDialData.maxThreads = this.filterList[index].filter_max_thread;
+      this.filterDialData.winSize = this.filterList[index].filter_win_size;
+
+      this.FilterPageVisible = true;
+    },
+
+    handleFilterDialClose(done) {
+      this.filterDialData = {};
+      this.FilterPageVisible = false;
+    },
+
+    // 新增节点相关函数：
+    resetNodeForm(formName) {
+      //  重置，点击取消按钮后清空输入的节点信息
+      this.$refs[formName].resetFields();
+    },
+
+    deleteFilter(formName) {
+      this.$axios({
+        url: `${window.$config.HOST}/api/filter/delete`,
+        method: "delete",
+        data: {
+          id: this.filterDialData.id,
+        },
+      })
+        .then((response) => {
+          if (response.data.status == "OK") {
+            this.$message({ message: "删除成功！" });
+            this.FilterPageVisible = false;
+            this.filterDialData = {};
+            this.loadFilterInfo();
+          } else {
+            this.$message.error({ message: "删除失败!" });
+            console.log(response);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          this.$message.error({ message: "删除失败，前后端通信错误!" });
+        });
+    },
+
+    submitFilterModification(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$axios
+            .post(`${window.$config.HOST}/api/filter/update_config`, {
+              id: this.filterDialData.id,
+              network_id: this.filterDialData.network_id,
+              win_size: this.filterDialData.winSize,
+              match_threshold: this.filterDialData.expMatchTime,
+              base_rate: this.filterDialData.baserate,
+              max_thread: this.filterDialData.maxThreads,
+            })
+            .then((response) => {
+              if (response.data.status == "OK") {
+                this.$message({ message: "修改成功！" });
+
+                this.FilterPageVisible = false;
+                this.modifyNodeData = {};
+                this.loadFilterInfo();
+              } else {
+                this.$message.error({ message: "修改失败！" });
+
+                console.log(response);
+              }
+            })
+            .catch((error) => {
+              console.log(error);
+              this.$message.error({ message: "修改失败，前后端通信错误!" });
+            });
+        } else {
+          this.$message.error({ message: "请填写相关内容" });
+
+          return false;
+        }
+      });
     },
   },
 };

@@ -1,6 +1,6 @@
 <template>
   <div class="quick-container">
-    <el-card class="quick-card">
+    <el-card>
       <v-chart ref="chart2" :options="option2" id="tpc" />
     </el-card>
 
@@ -63,10 +63,23 @@
         </el-form-item>
 
         <el-form-item label="超节点名称" prop="supernode_name">
-          <el-select filterable clearable class="nodename_add_node" v-model="modifyNodeData.supernode_name" placeholder="请选择超节点">
-            　　　　<el-option v-for="item in tableData"  :label="item.name" :key="item.id" v-bind:value="item.name">
-              <span style="float: left">{{ item.name }}</span> 
-              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
+          <el-select
+            filterable
+            clearable
+            class="nodename_add_node"
+            v-model="modifyNodeData.supernode_name"
+            placeholder="请选择超节点"
+          >
+            　　　　<el-option
+              v-for="item in tableData"
+              :label="item.name"
+              :key="item.id"
+              v-bind:value="item.name"
+            >
+              <span style="float: left">{{ item.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{
+                item.id
+              }}</span>
             </el-option>
           </el-select>
         </el-form-item>
@@ -183,10 +196,23 @@
         </el-form-item>
 
         <el-form-item label="超节点名称" prop="supernode_name">
-          <el-select filterable clearable class="nodename_add_node" v-model="addNodeData.supernode_name" placeholder="请选择超节点">
-            　　　　<el-option v-for="item in tableData"  :label="item.name" :key="item.id" v-bind:value="item.name">
-              <span style="float: left">{{ item.name }}</span> 
-              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.id }}</span>
+          <el-select
+            filterable
+            clearable
+            class="nodename_add_node"
+            v-model="addNodeData.supernode_name"
+            placeholder="请选择超节点"
+          >
+            　　　　<el-option
+              v-for="item in tableData"
+              :label="item.name"
+              :key="item.id"
+              v-bind:value="item.name"
+            >
+              <span style="float: left">{{ item.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{
+                item.id
+              }}</span>
             </el-option>
           </el-select>
         </el-form-item>
@@ -424,18 +450,6 @@ export default {
           // { min: 1, message: '不能为空', trigger: 'blur' }
           { validator: validate_vlanaddr, trigger: "blur" },
         ],
-        // vlan_name: [
-        //   { required: true, trigger: 'blur' },
-        //   { min: 1, message: '不能为空', trigger: 'blur' }
-        // ],
-        // supernode_name: [
-        //   { required: true, trigger: 'blur' },
-        //   { min: 1, message: '不能为空', trigger: 'blur' }
-        // ],
-        // key: [
-        //   { required: true, trigger: 'blur' },
-        //   { min: 1, message: '不能为空', trigger: 'blur' }
-        // ]
       },
       AddNodeFormVisible: false, // 是否显示新增节点框
       modifyPageVisible: false,
@@ -523,23 +537,7 @@ export default {
         },
       ],
 
-      tableData: [
-        {
-          id: "009",
-          role: "sink",
-          name: "王小虎",
-          vlan_addr: "1.1.1.1",
-          vlan_name: "v1",
-          service_port: 50,
-          key: "key1",
-          supernode_name: "n1",
-          create_time: "2020-9-14",
-          update_time: "2020-9-15",
-          state: "open",
-          description: "",
-          addr: "129号",
-        },
-      ],
+      tableData: [],
       option2: {
         grid: {
           top: "14%",

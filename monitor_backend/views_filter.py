@@ -4,7 +4,7 @@ import requests
 import json
 import traceback
 import time
-from docker import Client as dockerClient
+from docker import DockerClient as dockerClient
 from io import BytesIO
 from influxdb import InfluxDBClient
 
@@ -16,10 +16,15 @@ def filter_list(req):
     res = {"status": "OK", "data": []}
 
     sql_list_filter = "SELECT `sink_sources`.`id`, `sink_sources`.`name`,"\
-        " `sink_sources`.`source_data_system`, `sink_sources`.`source_info`,"\
-        " `network`.`id` as `network_id`, `network`.`name` as `network_name`,"\
-        " `network`.`vlan_addr` as `vlan_addr`, `sink_sources`.`docker_port`,"\
-        " `sink_sources`.`state`,`network`.`addr` as `addr` "\
+        "`sink_sources`.`source_data_system`, `sink_sources`.`source_info`,"\
+        "`network`.`id` as `network_id`, `network`.`name` as `network_name`,"\
+        "`network`.`vlan_addr` as `vlan_addr`, `sink_sources`.`docker_port`,"\
+        "`sink_sources`.`state`,`network`.`addr` as `addr`,"\
+        "`sink_sources`.`filter_base_rate`,"\
+        "`sink_sources`.`filter_exp_match`,"\
+        "`sink_sources`.`filter_win_size`,"\
+        "`sink_sources`.`filter_max_thread`,"\
+        "`sink_sources`.`filter_exist` "\
         " FROM `sink_sources` JOIN `network` ON `sink_sources`.`network_id`=`network`.`id`"\
         " WHERE `sink_sources`.`role` = 'source' "
     try:
@@ -36,6 +41,11 @@ def filter_list(req):
                 "docker_port": fil[7],
                 "state": fil[8],
                 "addr": fil[9],
+                "filter_base_rate": fil[10],
+                "filter_exp_match": fil[11],
+                "filter_win_size": fil[12],
+                "filter_max_thread": fil[13],
+                "filter_exist": "Yes" if fil[14] else "No",
             })
     except Exception as e:
         roda.logger.error("List filters query [{}] failed: [{}]".format(
@@ -99,38 +109,6 @@ def filter_source_images(req):
         except Exception as e:
             errmsg = "{} docker get image info failed: [{}]".format(
                 source_addr, e)
-            roda.logger.error(errmsg)
-            res["status"] = errmsg
-    else:
-        res["status"] = "miss parameter"
-
-    return HttpResponse(json.dumps(res), content_type="application/json")
-
-
-@dj_http.require_GET
-def filter_create_container(req):
-    res = {"status": "OK"}
-
-    post_param = req.GET
-
-    source_addr = post_param.get("source_addr")
-    docker_port = post_param.get("docker_port")
-    image_name_and_tag = post_param.get("image_name")
-    container_name = post_param.get("container_name")
-
-    if(source_addr and docker_port and
-       image_name_and_tag and container_name):
-        try:
-            docker_client = dockerClient(
-                base_url="tcp://{}:{}".format(source_addr, docker_port))
-            docker_resp = docker_client.create_container(
-                image=image_name_and_tag,
-                name=container_name
-            )
-            roda.logger.info(docker_resp)
-        except Exception as e:
-            errmsg = "create docker {} on {} get image info failed: [{}]".format(
-                container_name, source_addr, e)
             roda.logger.error(errmsg)
             res["status"] = errmsg
     else:
@@ -244,6 +222,136 @@ def filter_get_e2e_perf(req):
                 'minimum': first_ele['min'],
                 'variance': variance / len(varianceList)
             }
+    else:
+        res["status"] = "miss parameter"
+
+    return HttpResponse(json.dumps(res), content_type="application/json")
+
+
+@dj_http.require_POST
+def filter_update_config(req):
+    res = {"status": "OK"}
+
+    post_param = json.loads(req.body.decode("UTF-8"))
+
+    if("network_id" in post_param and
+       "id" in post_param and
+       "win_size" in post_param and
+       "match_threshold" in post_param and
+       "base_rate" in post_param and
+       "max_thread" in post_param):
+
+        sql_query = "SELECT `{}` FROM `network` WHERE `id`={}".format(
+            'vlan_addr' if roda.Is_overlay_network else 'addr', post_param["network_id"])
+        try:
+            roda.mydb_cursor.execute(sql_query)
+            result = roda.mydb_cursor.fetchone()
+            influx_addr = result[0]
+        except Exception as e:
+            roda.logger.error(
+                "get addr info [{}]:{}".format(sql_query, e))
+            res["status"] = "get addr info: {}".format(e)
+            return HttpResponse(json.dumps(res), content_type="application/json")
+
+        try:
+            influx_client = InfluxDBClient(
+                influx_addr, 8086, "lab126", "lab126", "roda")
+
+            influx_client.drop_measurement("dynamicParams")
+            influx_client.write_points([{
+                "measurement": "dynamicParams",
+                "tags": {
+                },
+                "fields": {
+                    "maxThreads": post_param["max_thread"],
+                    "baseRate": post_param["base_rate"],
+                    "matchWinSize": post_param["win_size"],
+                    "expMatchTime": post_param["match_threshold"]
+                }
+            }])
+        except Exception as e:
+            roda.logger.error(
+                "set dynamic param failed:{}".format(e))
+            res["status"] = "set dynamic param failed:{}".format(e)
+            return HttpResponse(json.dumps(res), content_type="application/json")
+
+        sql_query = "UPDATE `sink_sources` SET "\
+            "`filter_base_rate`={}, `filter_exp_match`={},"\
+            "`filter_win_size`={}, `filter_max_thread`={},"\
+            "`filter_exist`=TRUE WHERE `id`={}".format(
+                post_param["base_rate"], post_param["match_threshold"],
+                post_param["win_size"], post_param["max_thread"], post_param["id"])
+        try:
+            roda.mydb_cursor.execute(sql_query)
+            roda.mydb_client.commit()
+
+        except Exception as e:
+            roda.mydb_client.rollback()
+            roda.logger.error(
+                "update info falied [{}]:{}".format(sql_query, e))
+            res["status"] = "update info falied : {}".format(e)
+            return HttpResponse(json.dumps(res), content_type="application/json")
+
+    else:
+        res["status"] = "miss parameter"
+
+    return HttpResponse(json.dumps(res), content_type="application/json")
+
+
+@dj_http.require_http_methods(["DELETE"])
+def filter_delete(req):
+    res = {"status": "OK"}
+
+    delete_param = json.loads(req.body.decode("UTF-8"))
+
+    if("id" in delete_param):
+        sql_query = "SELECT `network`.`{}` as `addr`, "\
+            "`sink_sources`.`filter_exist`,`sink_sources`.`docker_port` "\
+            "FROM `sink_sources` "\
+            "JOIN `network` ON `sink_sources`.`network_id`=`network`.`id` "\
+            "WHERE `sink_sources`.`id`={}".format(
+                'vlan_addr' if roda.Is_overlay_network else 'addr',
+                delete_param["id"])
+        try:
+            roda.mydb_cursor.execute(sql_query)
+            result = roda.mydb_cursor.fetchone()
+            docker_addr = result[0]
+            filter_exist = result[1]
+            docker_port = result[2]
+            if(not filter_exist):
+                res["status"] = "filter container does not exist"
+                return HttpResponse(json.dumps(res), content_type="application/json")
+
+        except Exception as e:
+            roda.logger.error(
+                "get filter info [{}]:{}".format(sql_query, e))
+            res["status"] = "get addr info: {}".format(e)
+            return HttpResponse(json.dumps(res), content_type="application/json")
+
+        try:
+            docker_client = dockerClient(
+                base_url="tcp://{}:{}".format(docker_addr, docker_port))
+            container_info = docker_client.containers.get(
+                container_id="filter")
+            container_info.stop()
+            container_info.remove()
+        except Exception as e:
+            errmsg = "stop filter failed: {}".format(e)
+            res["status"] = errmsg
+            roda.logger.error(errmsg)
+            return HttpResponse(json.dumps(res), content_type="application/json")
+
+        try:
+            sql_query = "UPDATE `sink_sources` SET "\
+                "`filter_base_rate`=null, `filter_exp_match`=null,"\
+                "`filter_win_size`= null, `filter_max_thread`=null,"\
+                "`filter_exist`=FALSE WHERE `id`={}".format(delete_param['id'])
+            roda.mydb_cursor.execute(sql_query)
+            roda.mydb_client.commit()
+        except Exception as e:
+            roda.mydb_client.rollback()
+            res["status"] = "update removed info failed: {}".format(e)
+
     else:
         res["status"] = "miss parameter"
 

@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 ./vscode/
+image_build_files/dockerFiles/*
+image_build_files/tarFiles/*

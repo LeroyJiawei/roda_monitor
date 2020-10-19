@@ -25,7 +25,8 @@ try:
         port=mysql_port,
         user=mysql_user,
         passwd=mysql_passwd,
-        database=mysql_db
+        database=mysql_db,
+        buffered=True
     )
 
     sql_query = "SELECT `value` FROM `universe` WHERE `config_name`='is_overlay' "

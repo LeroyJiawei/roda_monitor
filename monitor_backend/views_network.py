@@ -238,8 +238,7 @@ def network_delete(req):
     return HttpResponse(json.dumps(res), content_type="application/json")
 
 
-@dj_http.require_GET
-def network_topo(req):
+def network_topo_vlan(req):
     res = {"status": "OK"}
 
     supernodes_name = []
@@ -280,3 +279,43 @@ def network_topo(req):
             res["status"] = "network select failed: {}".format(e)
 
     return HttpResponse(json.dumps(res), content_type="application/json")
+
+
+def network_topo_non_lan(req):
+    res = {"status": "OK"}
+
+    supernodes_name = []
+    # if role does not exist, get() retuen none
+    sql_query = '''SELECT `name`,`id`,`role` FROM network'''
+    try:
+        roda.mydb_cursor.execute(sql_query)
+        nodes_name = roda.mydb_cursor.fetchall()
+    except Exception as e:
+        roda.logger.error(
+            "network select query [{}] failed: {}".format(sql_query, e))
+        res["status"] = "network select failed: {}".format(e)
+        return HttpResponse(json.dumps(res), content_type="application/json")
+
+    res["data"] = {"nodes": [], "edges": []}
+
+    total_len = len(nodes_name)
+    for i in range(total_len):
+        res["data"]["nodes"].append({
+            "name": nodes_name[i][0],
+            "id": nodes_name[i][1]
+        })
+        for j in range(i+1, total_len):
+            res["data"]["edges"].append({
+                "source": str(nodes_name[i][1]),
+                "target": str(nodes_name[j][1])
+            })
+
+    return HttpResponse(json.dumps(res), content_type="application/json")
+
+
+@dj_http.require_GET
+def network_topo(req):
+    if roda.Is_overlay_network:
+        return network_topo_vlan(req)
+    else:
+        return network_topo_non_lan(req)
